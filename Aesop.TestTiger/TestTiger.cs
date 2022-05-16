@@ -119,7 +119,7 @@ namespace Aesop
             Stopwatch stopwatch;
             FileInfo fi = new (fileName);
 
-            await using (FileStream s = new (
+            await using (Stream s = new FileStream(
                 fi.FullName,
                 FileMode.Open,
                 FileAccess.Read,
