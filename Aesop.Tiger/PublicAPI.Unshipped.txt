@@ -1,0 +1,23 @@
+﻿abstract Aesop.TigerFull.SelfTest() -> byte[]
+Aesop.Tiger128
+Aesop.Tiger128.Tiger128() -> void
+Aesop.Tiger128.Tiger128(in int passes) -> void
+Aesop.Tiger160
+Aesop.Tiger160.Tiger160() -> void
+Aesop.Tiger160.Tiger160(in int passes) -> void
+Aesop.Tiger192
+Aesop.Tiger192.Tiger192() -> void
+Aesop.Tiger192.Tiger192(in int passes) -> void
+Aesop.TigerFull
+Aesop.TigerFull.Passes.get -> int
+Aesop.TigerFull.TigerFull(in int passes) -> void
+const Aesop.TigerFull.DefaultPasses = 3 -> int
+override Aesop.Tiger128.HashFinal() -> byte[]
+override Aesop.Tiger128.SelfTest() -> byte[]
+override Aesop.Tiger160.HashFinal() -> byte[]
+override Aesop.Tiger160.SelfTest() -> byte[]
+override Aesop.Tiger192.SelfTest() -> byte[]
+override Aesop.TigerFull.CanTransformMultipleBlocks.get -> bool
+override Aesop.TigerFull.HashCore(byte[] array, int ibStart, int cbSize) -> void
+override Aesop.TigerFull.HashFinal() -> byte[]
+override Aesop.TigerFull.Initialize() -> void
