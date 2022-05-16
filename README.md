@@ -14,7 +14,7 @@ using (HashAlgorithm h = new Tiger192())
         (int)fi.Length,
         FileOptions.SequentialScan))
     {
-            await h.ComputeHashAsync(s).ConfigureAwait(false);
+        await h.ComputeHashAsync(s).ConfigureAwait(false);
     }
     
     await Out.WriteAsync(string.Format(CurrentCulture, "\"{0}\": ", fileName)).ConfigureAwait(false);
