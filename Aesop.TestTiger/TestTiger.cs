@@ -54,14 +54,14 @@ namespace Aesop
         /// <param name="args">The arguments.</param>
         private static async Task Main(string[] args)
         {
-            Tiger192 h1 = new ();
+            TigerFull h1 = new Tiger192();
             ////var h2 = new MD5CryptoServiceProvider();
             ////var h3 = new SHA1CryptoServiceProvider();
             ////var h4 = new SHA1Managed();
             ////var h5 = new SHA256Managed();
 
-            // change h1 to h2, etc. for testing
-            using (Tiger192 h = h1)
+            // Change h1 to h2, etc. for testing.
+            using (TigerFull h = h1)
             {
                 await Out.WriteLineAsync(string.Format(
                     CurrentCulture,
@@ -73,12 +73,12 @@ namespace Aesop
                 }
             }
 
-            using (Tiger160 h = new ())
+            using (TigerFull h = new Tiger160())
             {
                 await TestMyTigerAsync(h).ConfigureAwait(false);
             }
 
-            using (Tiger128 h = new ())
+            using (TigerFull h = new Tiger128())
             {
                 await TestMyTigerAsync(h).ConfigureAwait(false);
             }

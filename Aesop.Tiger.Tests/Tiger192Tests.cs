@@ -52,7 +52,7 @@ namespace Aesop.Tiger.Tests
         [TestMethod]
         public void TestSelfTest()
         {
-            using Tiger192 h = new (DefaultPasses);
+            using TigerFull h = new Tiger192(DefaultPasses);
             Assert.IsNotNull(h.SelfTest());
         }
 
@@ -62,7 +62,7 @@ namespace Aesop.Tiger.Tests
         [TestMethod]
         public void TestCanTransformMultipleBlocks()
         {
-            using Tiger192 h = new ();
+            using TigerFull h = new Tiger192();
             Assert.IsTrue(h.CanTransformMultipleBlocks);
         }
 
@@ -72,7 +72,7 @@ namespace Aesop.Tiger.Tests
         [TestMethod]
         public void TestPasses()
         {
-            using Tiger192 h = new ();
+            using TigerFull h = new Tiger192();
             Assert.AreEqual(DefaultPasses, h.Passes);
         }
 
@@ -93,7 +93,7 @@ namespace Aesop.Tiger.Tests
                 0xf3, 0x7d, 0x39, 0xea,
             };
 
-            using Tiger192 h = new (DefaultPasses + 1);
+            using TigerFull h = new Tiger192(DefaultPasses + 1);
             byte[] hash = h.ComputeHash(Encoding.ASCII.GetBytes(TestData));
 
             Assert.IsTrue(hash.SequenceEqual(testHash));
