@@ -29,72 +29,126 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Aesop.Tiger.Tests
-{
-    using System.Text;
+namespace Aesop.Tiger.Tests;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Security.Cryptography;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using static System.Text.Encoding;
+using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+
+/// <summary>
+/// Tests the functionality of the <see cref="Tiger128" /> class.
+/// </summary>
+[TestClass]
+public sealed class Tiger128Tests
+{
+    /// <summary>
+    /// The default number of calculation passes.
+    /// </summary>
+    private const int DefaultPasses = 3;
 
     /// <summary>
-    /// Tests the functionality of the <see cref="Tiger128" /> class.
+    /// Runs the self-test of the <see cref="Tiger128" /> class and asserts its success.
     /// </summary>
-    [TestClass]
-    public sealed class Tiger128Tests
+    [TestMethod]
+    public void TestSelfTest()
     {
-        /// <summary>
-        /// The default number of calculation passes.
-        /// </summary>
-        private const int DefaultPasses = 3;
+        using TigerFull h = new Tiger128();
+        IsTrue(h.SelfTest().Length > 0);
+    }
 
-        /// <summary>
-        /// Runs the self-test of the <see cref="Tiger128" /> class and asserts its success.
-        /// </summary>
-        [TestMethod]
-        public void TestSelfTest()
-        {
-            using TigerFull h = new Tiger128(DefaultPasses);
-            Assert.IsNotNull(h.SelfTest());
-        }
+    /// <summary>
+    /// Runs the self-test of the <see cref="Tiger128" /> class in span mode and asserts its success.
+    /// </summary>
+    [TestMethod]
+    public void TestSelfTestTry()
+    {
+        using TigerFull h = new Tiger128();
+        IsTrue(h.SelfTestTry().Length > 0);
+    }
 
-        /// <summary>
-        /// Tests that <see cref="Tiger128" /> supports transforming multiple blocks.
-        /// </summary>
-        [TestMethod]
-        public void TestCanTransformMultipleBlocks()
-        {
-            using TigerFull h = new Tiger128();
-            Assert.IsTrue(h.CanTransformMultipleBlocks);
-        }
+    /// <summary>
+    /// Tests that <see cref="Tiger128" /> supports transforming multiple blocks.
+    /// </summary>
+    [TestMethod]
+    public void TestCanTransformMultipleBlocks()
+    {
+        using HashAlgorithm h = new Tiger128();
+        IsTrue(h.CanTransformMultipleBlocks);
+    }
 
-        /// <summary>
-        /// Tests <see cref="Tiger128" /> Passes property returns the proper default.
-        /// </summary>
-        [TestMethod]
-        public void TestPasses()
-        {
-            using TigerFull h = new Tiger128();
-            Assert.AreEqual(DefaultPasses, h.Passes);
-        }
+    /// <summary>
+    /// Tests <see cref="Tiger128" /> Passes property returns the proper default.
+    /// </summary>
+    [TestMethod]
+    public void TestPasses()
+    {
+        using TigerFull h = new Tiger128();
+        AreEqual(DefaultPasses, h.Passes);
+    }
 
-        /// <summary>
-        /// Tests <see cref="Tiger128" /> for additional passes with a test string.
-        /// </summary>
-        [TestMethod]
-        public void TestExtraPasses()
-        {
-            const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
-            byte[] testHash =
-            {
-                0x90, 0x69, 0x95, 0xe9,
-                0xaa, 0xbf, 0xb2, 0x4f,
-                0x25, 0x5d, 0x20, 0x17,
-                0xf3, 0x7d, 0x39, 0xea,
-            };
+    /// <summary>
+    /// Tests <see cref="Tiger128" /> HashSize property returns the proper hash algorithm bit size.
+    /// </summary>
+    [TestMethod]
+    public void TestHashSize()
+    {
+        using HashAlgorithm h = new Tiger128();
+        AreEqual(128, h.HashSize);
+    }
 
-            using TigerFull h = new Tiger128(DefaultPasses + 1);
-            byte[] hash = h.ComputeHash(Encoding.ASCII.GetBytes(TestData));
+    /// <summary>
+    /// Tests <see cref="Tiger128" /> for additional passes with a test string.
+    /// </summary>
+    [TestMethod]
+    public void TestExtraPasses()
+    {
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
+        byte[] testHash =
+        [
+            0x90, 0x69, 0x95, 0xe9,
+            0xaa, 0xbf, 0xb2, 0x4f,
+            0x25, 0x5d, 0x20, 0x17,
+            0xf3, 0x7d, 0x39, 0xea,
+        ];
 
-            Assert.IsTrue(hash.SequenceEqual(testHash));
-        }
+        using TigerFull h = new Tiger128(DefaultPasses + 1);
+
+        byte[] hash = h.ComputeHash(ASCII.GetBytes(TestData));
+
+        IsTrue(hash.SequenceEqual(testHash));
+    }
+
+    /// <summary>
+    /// Tests <see cref="Tiger128" /> in span mode for additional passes with a test string.
+    /// </summary>
+    [TestMethod]
+    //// ReSharper disable once TooManyDeclarations
+    public void TestExtraPassesTry()
+    {
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
+        byte[] testHash =
+        [
+            0x90, 0x69, 0x95, 0xe9,
+            0xaa, 0xbf, 0xb2, 0x4f,
+            0x25, 0x5d, 0x20, 0x17,
+            0xf3, 0x7d, 0x39, 0xea,
+        ];
+        int inputByteCount = ASCII.GetByteCount(TestData);
+        Span<byte> bytes = stackalloc byte[inputByteCount];
+
+        ASCII.GetBytes(TestData, bytes);
+
+        using HashAlgorithm h = new Tiger128(DefaultPasses + 1);
+
+        // ReSharper disable once ComplexConditionExpression
+        Span<byte> destination = stackalloc byte[h.HashSize >> 3];
+        bool result = h.TryComputeHash(bytes, destination, out int bytesWritten);
+
+        IsTrue(result);
+        AreEqual(destination.Length, bytesWritten);
+        IsTrue(destination.SequenceEqual(testHash));
     }
 }

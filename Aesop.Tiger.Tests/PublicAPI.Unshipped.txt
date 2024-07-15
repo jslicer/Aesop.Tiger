@@ -1,18 +1,27 @@
 ﻿Aesop.Tiger.Tests.Tiger128Tests
 Aesop.Tiger.Tests.Tiger128Tests.TestCanTransformMultipleBlocks() -> void
 Aesop.Tiger.Tests.Tiger128Tests.TestExtraPasses() -> void
+Aesop.Tiger.Tests.Tiger128Tests.TestExtraPassesTry() -> void
+Aesop.Tiger.Tests.Tiger128Tests.TestHashSize() -> void
 Aesop.Tiger.Tests.Tiger128Tests.TestPasses() -> void
 Aesop.Tiger.Tests.Tiger128Tests.TestSelfTest() -> void
+Aesop.Tiger.Tests.Tiger128Tests.TestSelfTestTry() -> void
 Aesop.Tiger.Tests.Tiger128Tests.Tiger128Tests() -> void
 Aesop.Tiger.Tests.Tiger160Tests
 Aesop.Tiger.Tests.Tiger160Tests.TestCanTransformMultipleBlocks() -> void
 Aesop.Tiger.Tests.Tiger160Tests.TestExtraPasses() -> void
+Aesop.Tiger.Tests.Tiger160Tests.TestExtraPassesTry() -> void
+Aesop.Tiger.Tests.Tiger160Tests.TestHashSize() -> void
 Aesop.Tiger.Tests.Tiger160Tests.TestPasses() -> void
 Aesop.Tiger.Tests.Tiger160Tests.TestSelfTest() -> void
+Aesop.Tiger.Tests.Tiger160Tests.TestSelfTestTry() -> void
 Aesop.Tiger.Tests.Tiger160Tests.Tiger160Tests() -> void
 Aesop.Tiger.Tests.Tiger192Tests
 Aesop.Tiger.Tests.Tiger192Tests.TestCanTransformMultipleBlocks() -> void
 Aesop.Tiger.Tests.Tiger192Tests.TestExtraPasses() -> void
+Aesop.Tiger.Tests.Tiger192Tests.TestExtraPassesTry() -> void
+Aesop.Tiger.Tests.Tiger192Tests.TestHashSize() -> void
 Aesop.Tiger.Tests.Tiger192Tests.TestPasses() -> void
 Aesop.Tiger.Tests.Tiger192Tests.TestSelfTest() -> void
+Aesop.Tiger.Tests.Tiger192Tests.TestSelfTestTry() -> void
 Aesop.Tiger.Tests.Tiger192Tests.Tiger192Tests() -> void

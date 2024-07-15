@@ -29,98 +29,97 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Aesop
+namespace Aesop;
+
+using System;
+using System.Linq;
+
+using static System.Text.Encoding;
+
+/// <inheritdoc />
+/// <summary>
+/// Tiger hash, 128-bit implementation.
+/// </summary>
+/// <seealso cref="Tiger160" />
+public class Tiger128 : TigerFull
 {
-    using System;
-    using System.Linq;
-    using System.Security.Cryptography;
-    using System.Text;
+    /// <summary>
+    /// The hash size in bytes.
+    /// </summary>
+    private const int HashSizeInBytes = 16;
+
+    /// <inheritdoc cref="Tiger160"/>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Tiger128" /> class.
+    /// </summary>
+    /// <param name="passes">The number of calculation passes.</param>
+    public Tiger128(in int passes = DefaultPasses)
+        : base(passes) => this.HashSizeValue = HashSizeInBytes << 3;
 
     /// <inheritdoc />
     /// <summary>
-    /// Tiger hash, 128-bit implementation.
+    /// Provides a self-test of the algorithm.
     /// </summary>
-    /// <seealso cref="Tiger160" />
-    public class Tiger128 : Tiger160
+    /// <returns>The hash code if the self-test succeeds, an empty <see cref="byte" /> array otherwise.</returns>
+    /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
+    /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
+    public override byte[] SelfTest()
     {
-        /// <summary>
-        /// The hash size in bytes.
-        /// </summary>
-        private const int HashSizeInBytes = 16;
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+        byte[] testHash =
+        [
+            0xb7, 0x61, 0x0d, 0xf7,
+            0xe8, 0x4f, 0x0a, 0xc3,
+            0xa7, 0x1c, 0x63, 0x1e,
+            0x7b, 0x53, 0xf7, 0x8e,
+        ];
 
-        /// <inheritdoc cref="Tiger160"/>
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tiger128" /> class.
-        /// </summary>
-        public Tiger128()
-            : this(DefaultPasses)
+        this.Initialize();
+
+        byte[] hash = this.ComputeHash(ASCII.GetBytes(TestData));
+
+        return hash.SequenceEqual(testHash) ? hash : [];
+    }
+
+    /// <inheritdoc />
+    /// <summary>
+    /// Provides a self-test of the algorithm in span mode.
+    /// </summary>
+    /// <returns>The hash code if the self-test succeeds, an empty byte <see cref="ReadOnlySpan{T}" />
+    /// otherwise.</returns>
+    /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
+    /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
+    public override ReadOnlySpan<byte> SelfTestTry()
+    {
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+        byte[] testHash =
+        [
+            0xb7, 0x61, 0x0d, 0xf7,
+            0xe8, 0x4f, 0x0a, 0xc3,
+            0xa7, 0x1c, 0x63, 0x1e,
+            0x7b, 0x53, 0xf7, 0x8e,
+        ];
+
+        this.Initialize();
+
+        Span<byte> hash = stackalloc byte[HashSizeInBytes];
+        bool success = this.TryComputeHash(ASCII.GetBytes(TestData), hash, out int bytesWritten);
+
+        // ReSharper disable once ComplexConditionExpression
+        if (!success || bytesWritten != hash.Length || !hash.SequenceEqual(testHash))
         {
+            return [];
         }
 
-        /// <inheritdoc cref="Tiger160"/>
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tiger128" /> class.
-        /// </summary>
-        /// <param name="passes">The number of calculation passes.</param>
-        public Tiger128(in int passes)
-            : base(passes) => this.HashSizeValue = HashSizeInBytes << 3;
+        byte[] hashArray = new byte[hash.Length];
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Provides a self-test of the algorithm.
-        /// </summary>
-        /// <returns>The hash code if the self-test succeeds, <c>null</c> otherwise.</returns>
-        /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
-        /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
-        /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
-        /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
-        /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
-        public override byte[] SelfTest()
-        {
-            const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
-            byte[] testHash =
-            {
-                0xb7, 0x61, 0x0d, 0xf7,
-                0xe8, 0x4f, 0x0a, 0xc3,
-                0xa7, 0x1c, 0x63, 0x1e,
-                0x7b, 0x53, 0xf7, 0x8e,
-            };
-
-            this.Initialize();
-
-            byte[] hash = this.ComputeHash(Encoding.ASCII.GetBytes(TestData));
-
-            return hash.SequenceEqual(testHash) ? hash : null;
-        }
-
-        /// <inheritdoc cref="HashAlgorithm" />
-        /// <summary>When overridden in a derived class, finalizes the hash computation after the last data is
-        /// processed by the cryptographic stream object.</summary>
-        /// <returns>The computed hash code.</returns>
-        /// <exception cref="RankException"> sourceArray and destinationArray have different ranks.</exception>
-        /// <exception cref="ArgumentNullException"> sourceArray is <see langword="null" />.-or-
-        /// destinationArray is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentOutOfRangeException"> sourceIndex is less than the lower bound of the first
-        /// dimension of sourceArray.-or- destinationIndex is less than the lower bound of the first dimension of
-        /// destinationArray.-or- length is less than zero.</exception>
-        /// <exception cref="ArgumentException"> length is greater than the number of elements from sourceIndex to the
-        /// end of sourceArray.-or- length is greater than the number of elements from destinationIndex to the end of
-        /// destinationArray.</exception>
-        /// <exception cref="ArrayTypeMismatchException"> sourceArray and destinationArray" are of incompatible
-        /// types.</exception>
-        /// <exception cref="InvalidCastException">At least one element in sourceArray" cannot be cast to the type of
-        /// destinationArray.</exception>
-        /// <exception cref="OverflowException">The array is multidimensional and contains more than
-        /// <see cref="F:System.Int32.MaxValue" /> elements.</exception>
-        /// <exception cref="IndexOutOfRangeException"> index" is less than the lower bound of array.-or-
-        /// length is less than zero.-or-The sum of index and length is greater than the size of array.</exception>
-        protected override byte[] HashFinal()
-        {
-            byte[] result = base.HashFinal();
-            byte[] result1 = new byte[HashSizeInBytes];
-
-            Array.Copy(result, 4, result1, 0, result1.Length);
-            return result1;
-        }
+        hash.CopyTo(hashArray);
+        return new(hashArray);
     }
 }

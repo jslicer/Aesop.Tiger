@@ -29,69 +29,100 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Aesop
+namespace Aesop;
+
+using System;
+using System.Linq;
+
+using static System.Text.Encoding;
+
+/// <inheritdoc cref="TigerFull" />
+/// <summary>
+/// Tiger hash, 192-bit implementation.
+/// </summary>
+/// <seealso cref="TigerFull" />
+public class Tiger192 : TigerFull
 {
-    using System.Linq;
-    using System.Security.Cryptography;
-    using System.Text;
+    /// <summary>
+    /// The hash size in bytes.
+    /// </summary>
+    private const int HashSizeInBytes = 24;
 
     /// <inheritdoc cref="TigerFull" />
     /// <summary>
-    /// Tiger hash, 192-bit implementation.
+    /// Initializes a new instance of the <see cref="Tiger192" /> class.
     /// </summary>
-    /// <seealso cref="TigerFull" />
-    public class Tiger192 : TigerFull
+    /// <param name="passes">The number of calculation passes.</param>
+    public Tiger192(in int passes = DefaultPasses)
+        : base(passes) => this.HashSizeValue = HashSizeInBytes << 3;
+
+    /// <inheritdoc />
+    /// <summary>
+    /// Provides a self-test of the algorithm.
+    /// </summary>
+    /// <returns>The hash code if the self-test succeeds, an empty <see cref="byte" /> array otherwise.</returns>
+    /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
+    /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
+    public override byte[] SelfTest()
     {
-        /// <summary>
-        /// The hash size in bytes.
-        /// </summary>
-        private const int HashSizeInBytes = 24;
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+        byte[] testHash =
+        [
+            0x0f, 0x7b, 0xf9, 0xa1,
+            0x9b, 0x9c, 0x58, 0xf2,
+            0xb7, 0x61, 0x0d, 0xf7,
+            0xe8, 0x4f, 0x0a, 0xc3,
+            0xa7, 0x1c, 0x63, 0x1e,
+            0x7b, 0x53, 0xf7, 0x8e,
+        ];
 
-        /// <inheritdoc cref="TigerFull" />
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tiger192" /> class.
-        /// </summary>
-        public Tiger192()
-            : this(DefaultPasses)
+        this.Initialize();
+
+        byte[] hash = this.ComputeHash(ASCII.GetBytes(TestData));
+
+        return hash.SequenceEqual(testHash) ? hash : [];
+    }
+
+    /// <summary>
+    /// Provides a self-test of the algorithm in span mode.
+    /// </summary>
+    /// <returns>The hash code if the self-test succeeds, an empty byte <see cref="ReadOnlySpan{T}" />
+    /// otherwise.</returns>
+    /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
+    /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
+    public override ReadOnlySpan<byte> SelfTestTry()
+    {
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+        byte[] testHash =
+        [
+            0x0f, 0x7b, 0xf9, 0xa1,
+            0x9b, 0x9c, 0x58, 0xf2,
+            0xb7, 0x61, 0x0d, 0xf7,
+            0xe8, 0x4f, 0x0a, 0xc3,
+            0xa7, 0x1c, 0x63, 0x1e,
+            0x7b, 0x53, 0xf7, 0x8e,
+        ];
+
+        this.Initialize();
+
+        Span<byte> hash = stackalloc byte[HashSizeInBytes];
+        bool success = this.TryComputeHash(ASCII.GetBytes(TestData), hash, out int bytesWritten);
+
+        // ReSharper disable once ComplexConditionExpression
+        if (!success || bytesWritten != hash.Length || !hash.SequenceEqual(testHash))
         {
+            return [];
         }
 
-        /// <inheritdoc cref="TigerFull" />
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tiger192" /> class.
-        /// </summary>
-        /// <param name="passes">The number of calculation passes.</param>
-        public Tiger192(in int passes)
-            : base(passes) => this.HashSizeValue = HashSizeInBytes << 3;
+        byte[] hashArray = new byte[hash.Length];
 
-        /// <inheritdoc cref="HashAlgorithm" />
-        /// <summary>
-        /// Provides a self-test of the algorithm.
-        /// </summary>
-        /// <returns>The hash code if the self-test succeeds, <c>null</c> otherwise.</returns>
-        /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
-        /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
-        /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
-        /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
-        /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
-        public override byte[] SelfTest()
-        {
-            const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
-            byte[] testHash =
-            {
-                0x0f, 0x7b, 0xf9, 0xa1,
-                0x9b, 0x9c, 0x58, 0xf2,
-                0xb7, 0x61, 0x0d, 0xf7,
-                0xe8, 0x4f, 0x0a, 0xc3,
-                0xa7, 0x1c, 0x63, 0x1e,
-                0x7b, 0x53, 0xf7, 0x8e,
-            };
-
-            this.Initialize();
-
-            byte[] hash = this.ComputeHash(Encoding.ASCII.GetBytes(TestData));
-
-            return hash.SequenceEqual(testHash) ? hash : null;
-        }
+        hash.CopyTo(hashArray);
+        return new(hashArray);
     }
 }

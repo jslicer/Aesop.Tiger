@@ -30,138 +30,136 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Aesop
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Security.Cryptography;
-    using System.Threading.Tasks;
+namespace Aesop;
 
-    using static System.Console;
-    using static System.Globalization.CultureInfo;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+
+using static System.Console;
+using static System.Globalization.CultureInfo;
+
+/// <summary>
+/// Holds the program's entry point.
+/// </summary>
+internal static class TestTiger
+{
+    /// <summary>
+    /// The program's entry point.
+    /// </summary>
+    /// <param name="args">The arguments.</param>
+    private static async Task Main(string[] args)
+    {
+        HashAlgorithm h1 = new Tiger192();
+        ////var h2 = new MD5CryptoServiceProvider();
+        ////var h3 = new SHA1CryptoServiceProvider();
+        ////var h4 = new SHA1Managed();
+        ////var h5 = new SHA256Managed();
+
+        // Change h1 to h2, etc. for testing.
+        using (HashAlgorithm h = h1)
+        {
+            await Out.WriteLineAsync(string.Format(
+                CurrentCulture,
+                "IntPtr size is: {0}",
+                IntPtr.Size)).ConfigureAwait(false);
+            if (await TestMyTigerAsync(h).ConfigureAwait(false) && (args.Length > 0))
+            {
+                await HashFileAsync(args[0], h).ConfigureAwait(false);
+            }
+        }
+
+        using (HashAlgorithm ha = new Tiger160())
+        {
+            _ = await TestMyTigerAsync(ha).ConfigureAwait(false);
+        }
+
+        using (HashAlgorithm ha = new Tiger128())
+        {
+            _ = await TestMyTigerAsync(ha).ConfigureAwait(false);
+        }
+
+        _ = await In.ReadLineAsync().ConfigureAwait(false);
+    }
 
     /// <summary>
-    /// Holds the program's entry point.
+    /// Tests the Tiger algorithm.
     /// </summary>
-    internal static class TestTiger
+    /// <param name="h">The hash algorithm.</param>
+    /// <returns><c>true</c> if the test succeeds, <c>false</c> otherwise.</returns>
+    private static async Task<bool> TestMyTigerAsync(IDisposable h)
     {
-        /// <summary>
-        /// The program's entry point.
-        /// </summary>
-        /// <param name="args">The arguments.</param>
-        private static async Task Main(string[] args)
+        if (h is not TigerFull h1)
         {
-            TigerFull h1 = new Tiger192();
-            ////var h2 = new MD5CryptoServiceProvider();
-            ////var h3 = new SHA1CryptoServiceProvider();
-            ////var h4 = new SHA1Managed();
-            ////var h5 = new SHA256Managed();
-
-            // Change h1 to h2, etc. for testing.
-            using (TigerFull h = h1)
-            {
-                await Out.WriteLineAsync(string.Format(
-                    CurrentCulture,
-                    "IntPtr size is: {0}",
-                    IntPtr.Size)).ConfigureAwait(false);
-                if (await TestMyTigerAsync(h).ConfigureAwait(false) && (args.Length > 0))
-                {
-                    await HashFileAsync(args[0], h).ConfigureAwait(false);
-                }
-            }
-
-            using (TigerFull h = new Tiger160())
-            {
-                await TestMyTigerAsync(h).ConfigureAwait(false);
-            }
-
-            using (TigerFull h = new Tiger128())
-            {
-                await TestMyTigerAsync(h).ConfigureAwait(false);
-            }
-
-            await In.ReadLineAsync().ConfigureAwait(false);
+            return true;
         }
 
-        /// <summary>
-        /// Tests the Tiger algorithm.
-        /// </summary>
-        /// <param name="h">The hash algorithm.</param>
-        /// <returns><c>true</c> if the test succeeds, <c>false</c> otherwise.</returns>
-        private static async Task<bool> TestMyTigerAsync(IDisposable h)
+        List<byte> hash = [.. h1.SelfTest()];
+
+        await OutputHashAsync(hash).ConfigureAwait(false);
+        await Out.WriteLineAsync(string.Format(
+            CurrentCulture,
+            "Tiger/{0} {1}",
+            h1.HashSize,
+            hash.Count > 0 ? "good" : "bad")).ConfigureAwait(false);
+        return hash.Count > 0;
+    }
+
+    /// <summary>
+    /// Gets the hash value for the file.
+    /// </summary>
+    /// <param name="fileName">Name of the file.</param>
+    /// <param name="h">The hash algorithm.</param>
+    private static async Task HashFileAsync(string fileName, HashAlgorithm h)
+    {
+        Stopwatch stopwatch;
+        FileInfo fi = new(fileName);
+
+        await using (Stream s = new FileStream(
+            fi.FullName,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            (int)fi.Length,
+            FileOptions.SequentialScan))
         {
-            if (h is not TigerFull h1)
+            stopwatch = Stopwatch.StartNew();
+            try
             {
-                return true;
+                _ = await h.ComputeHashAsync(s).ConfigureAwait(false);
             }
-
-            List<byte> hash = (h1.SelfTest() ?? Enumerable.Empty<byte>()).ToList();
-
-            await OutputHashAsync(hash).ConfigureAwait(false);
-            await Out.WriteLineAsync(string.Format(
-                CurrentCulture,
-                "Tiger/{0} {1}",
-                h1.HashSize,
-                hash.Any() ? "good" : "bad")).ConfigureAwait(false);
-            return hash.Any();
+            finally
+            {
+                stopwatch.Stop();
+            }
         }
 
-        /// <summary>
-        /// Gets the hash value for the file.
-        /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        /// <param name="h">The hash algorithm.</param>
-        private static async Task HashFileAsync(string fileName, HashAlgorithm h)
+        await Out.WriteAsync(string.Format(CurrentCulture, "\"{0}\": ", fileName)).ConfigureAwait(false);
+        await OutputHashAsync(h.Hash).ConfigureAwait(false);
+        await Out.WriteLineAsync(string.Format(
+            CurrentCulture,
+            "Time: {0}",
+            stopwatch.Elapsed)).ConfigureAwait(false);
+        ////if (h is TigerFull)
+        ////{
+        ////    ((TigerFull)h).Timings();
+        ////}
+    }
+
+    /// <summary>
+    /// Outputs the hash.
+    /// </summary>
+    /// <param name="hash">The hash.</param>
+    private static async Task OutputHashAsync(IEnumerable<byte> hash)
+    {
+        foreach (byte by in hash)
         {
-            Stopwatch stopwatch;
-            FileInfo fi = new (fileName);
-
-            await using (Stream s = new FileStream(
-                fi.FullName,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.Read,
-                (int)fi.Length,
-                FileOptions.SequentialScan))
-            {
-                stopwatch = Stopwatch.StartNew();
-                try
-                {
-                    await h.ComputeHashAsync(s).ConfigureAwait(false);
-                }
-                finally
-                {
-                    stopwatch.Stop();
-                }
-            }
-
-            await Out.WriteAsync(string.Format(CurrentCulture, "\"{0}\": ", fileName)).ConfigureAwait(false);
-            await OutputHashAsync(h.Hash).ConfigureAwait(false);
-            await Out.WriteLineAsync(string.Format(
-                CurrentCulture,
-                "Time: {0}",
-                stopwatch.Elapsed)).ConfigureAwait(false);
-            ////if (h is TigerFull)
-            ////{
-            ////    ((TigerFull)h).Timings();
-            ////}
+            await Out.WriteAsync(by.ToString("X", InvariantCulture)).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Outputs the hash.
-        /// </summary>
-        /// <param name="hash">The hash.</param>
-        private static async Task OutputHashAsync(IEnumerable<byte> hash)
-        {
-            foreach (byte by in hash)
-            {
-                await Out.WriteAsync(by.ToString("X", InvariantCulture)).ConfigureAwait(false);
-            }
-
-            await Out.WriteLineAsync().ConfigureAwait(false);
-        }
+        await Out.WriteLineAsync().ConfigureAwait(false);
     }
 }
