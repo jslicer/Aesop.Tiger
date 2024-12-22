@@ -29,6 +29,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+// Ignore Spelling: ib
 namespace Aesop;
 
 using System;
@@ -104,11 +105,11 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     /// class.</summary>
     public override void Initialize()
     {
-        this._a = 0x0123456789abcdef;
-        this._b = 0xfedcba9876543210;
-        this._c = 0xf096a5b4c3b2e187;
-        this._byteBufferPos = 0;
-        this._len = 0UL;
+        _a = 0x0123456789abcdef;
+        _b = 0xfedcba9876543210;
+        _c = 0xf096a5b4c3b2e187;
+        _byteBufferPos = 0;
+        _len = 0UL;
     }
 
     /// <summary>
@@ -146,9 +147,9 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     protected override void HashCore(byte[] array, int ibStart, int cbSize)
     {
         int end = ibStart + cbSize;
-        int toCopy = BlockSizeInBytes - this._byteBufferPos;
+        int toCopy = BlockSizeInBytes - _byteBufferPos;
 
-        this._len += (ulong)cbSize;
+        _len += (ulong)cbSize;
         while (ibStart < end)
         {
             if (toCopy > cbSize)
@@ -156,18 +157,18 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
                 toCopy = cbSize;
             }
 
-            Array.Copy(array, ibStart, this._byteBuffer, this._byteBufferPos, toCopy);
+            Array.Copy(array, ibStart, _byteBuffer, _byteBufferPos, toCopy);
             ibStart += toCopy;
             cbSize -= toCopy;
-            this._byteBufferPos += toCopy;
-            if (this._byteBufferPos < BlockSizeInBytes)
+            _byteBufferPos += toCopy;
+            if (_byteBufferPos < BlockSizeInBytes)
             {
                 return;
             }
 
-            (this._a, this._b, this._c) =
-                this.ProcessBlock(this._a, this._b, this._c, this._byteBuffer, this._ulongBuffer);
-            this._byteBufferPos = 0;
+            (_a, _b, _c) =
+                ProcessBlock(_a, _b, _c, _byteBuffer, _ulongBuffer);
+            _byteBufferPos = 0;
             toCopy = BlockSizeInBytes;
         }
     }
@@ -183,9 +184,9 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     // ReSharper disable once MethodTooLong
     protected override byte[] HashFinal()
     {
-        Span<byte> bytes = stackalloc byte[this.HashSize >> 3];
+        Span<byte> bytes = stackalloc byte[HashSize >> 3];
 
-        return this.TryHashFinal(bytes, out int _) ? bytes.ToArray() : [];
+        return TryHashFinal(bytes, out int _) ? bytes.ToArray() : [];
     }
 
     /// <summary>
@@ -199,27 +200,27 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     // ReSharper disable once MethodTooLong
     protected override bool TryHashFinal(Span<byte> destination, out int bytesWritten)
     {
-        this._byteBuffer[this._byteBufferPos] = 1;
-        this._byteBufferPos++;
-        if (this._byteBufferPos >= BlockSizeInBytes - 8)
+        _byteBuffer[_byteBufferPos] = 1;
+        _byteBufferPos++;
+        if (_byteBufferPos >= BlockSizeInBytes - 8)
         {
-            Array.Clear(this._byteBuffer, this._byteBufferPos, BlockSizeInBytes - this._byteBufferPos);
-            (this._a, this._b, this._c) =
-                this.ProcessBlock(this._a, this._b, this._c, this._byteBuffer, this._ulongBuffer);
-            this._byteBufferPos = 0;
+            Array.Clear(_byteBuffer, _byteBufferPos, BlockSizeInBytes - _byteBufferPos);
+            (_a, _b, _c) =
+                ProcessBlock(_a, _b, _c, _byteBuffer, _ulongBuffer);
+            _byteBufferPos = 0;
         }
 
-        Array.Clear(this._byteBuffer, this._byteBufferPos, BlockSizeInBytes - this._byteBufferPos - 8);
-        LongToBytes(this._len << 3, this._byteBuffer, BlockSizeInBytes - 8);
-        (this._a, this._b, this._c) =
-            this.ProcessBlock(this._a, this._b, this._c, this._byteBuffer, this._ulongBuffer);
+        Array.Clear(_byteBuffer, _byteBufferPos, BlockSizeInBytes - _byteBufferPos - 8);
+        LongToBytes(_len << 3, _byteBuffer, BlockSizeInBytes - 8);
+        (_a, _b, _c) =
+            ProcessBlock(_a, _b, _c, _byteBuffer, _ulongBuffer);
 
         byte[] result = new byte[HashSizeInBytes];
-        int actualHashSizeInBytes = this.HashSize >> 3;
+        int actualHashSizeInBytes = HashSize >> 3;
 
-        LongToBytes(this._a, result, 0);
-        LongToBytes(this._b, result, 8);
-        LongToBytes(this._c, result, 16);
+        LongToBytes(_a, result, 0);
+        LongToBytes(_b, result, 8);
+        LongToBytes(_c, result, 16);
         result.AsSpan(HashSizeInBytes - actualHashSizeInBytes, actualHashSizeInBytes).CopyTo(destination);
         bytesWritten = actualHashSizeInBytes;
         return true;
@@ -321,7 +322,7 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
         while (pos < BlockSizeInBytes)
         {
             //// ReSharper disable once ComplexConditionExpression
-            this._ulongBuffer[i++] =
+            _ulongBuffer[i++] =
                 ((ulong)byteBuffer1[pos++] & 0xff) |
                 (((ulong)byteBuffer1[pos++] & 0xff) << 8) |
                 (((ulong)byteBuffer1[pos++] & 0xff) << 16) |
@@ -332,34 +333,31 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
                 ((ulong)byteBuffer1[pos++] << 56);
         }
 
-        return this.Compress(ap, bp, cp, ulongBuffer1);
+        return Compress(ap, bp, cp, ulongBuffer1);
     }
 
     // ReSharper disable once TooManyArguments
     private (ulong ac, ulong bc, ulong cc) Compress(ulong ac, ulong bc, ulong cc1, in ulong[] ulongBuffer1)
     {
-        this.SaveAbc(ac, bc, cc1);
+        SaveAbc(ac, bc, cc1);
         (ac, bc, cc1) = Pass(ac, bc, cc1, ulongBuffer1, 5);
         KeySchedule(ulongBuffer1);
         (cc1, ac, bc) = Pass(cc1, ac, bc, ulongBuffer1, 7);
         KeySchedule(ulongBuffer1);
         (bc, cc1, ac) = Pass(bc, cc1, ac, ulongBuffer1, 9);
 
-        int passNumber = DefaultPasses;
-
-        while (passNumber < this.Passes)
+        for (int passNumber = DefaultPasses; passNumber < Passes; passNumber++)
         {
             (cc1, ac, bc) = Pass(ac, bc, cc1, ulongBuffer1, 9);
-            passNumber++;
         }
 
-        return this.FeedForward(ac, bc, cc1);
+        return FeedForward(ac, bc, cc1);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void SaveAbc(in ulong av, in ulong bv, in ulong cv) => (this._aa, this._bb, this._cc) = (av, bv, cv);
+    private void SaveAbc(in ulong av, in ulong bv, in ulong cv) => (_aa, _bb, _cc) = (av, bv, cv);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (ulong af, ulong bf, ulong cf) FeedForward(in ulong af, in ulong bf, in ulong cf) =>
-        (af ^ this._aa, bf - this._bb, cf + this._cc);
+        (af ^ _aa, bf - _bb, cf + _cc);
 }

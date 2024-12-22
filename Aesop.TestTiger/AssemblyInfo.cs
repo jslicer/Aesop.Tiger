@@ -76,7 +76,7 @@ using System.Runtime.InteropServices;
 //       located in the project directory, you would specify the AssemblyKeyFile
 //       attribute as [assembly: AssemblyKeyFile("..\\..\\mykey.snk")]
 //   (*) Delay Signing is an advanced option - see the Microsoft .NET Framework
-//       documentation for more information on this.
+//       documentation for more information on
 //
 ////[assembly: AssemblyKeyFile(@"..\..\..\Aesop.snk")]
 

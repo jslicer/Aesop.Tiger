@@ -143,8 +143,7 @@ public sealed class Tiger192Tests
         int inputByteCount = ASCII.GetByteCount(TestData);
         Span<byte> bytes = stackalloc byte[inputByteCount];
 
-        ASCII.GetBytes(TestData, bytes);
-
+        _ = ASCII.GetBytes(TestData, bytes);
         using HashAlgorithm h = new Tiger192(DefaultPasses + 1);
 
         // ReSharper disable once ComplexConditionExpression

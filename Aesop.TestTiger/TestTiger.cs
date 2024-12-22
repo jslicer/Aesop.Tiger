@@ -37,6 +37,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 
 using static System.Console;
@@ -51,6 +52,7 @@ internal static class TestTiger
     /// The program's entry point.
     /// </summary>
     /// <param name="args">The arguments.</param>
+    // ReSharper disable once MethodTooLong
     private static async Task Main(string[] args)
     {
         HashAlgorithm h1 = new Tiger192();
@@ -60,37 +62,39 @@ internal static class TestTiger
         ////var h5 = new SHA256Managed();
 
         // Change h1 to h2, etc. for testing.
+        using CancellationTokenSource cts = new();
         using (HashAlgorithm h = h1)
         {
             await Out.WriteLineAsync(string.Format(
                 CurrentCulture,
                 "IntPtr size is: {0}",
                 IntPtr.Size)).ConfigureAwait(false);
-            if (await TestMyTigerAsync(h).ConfigureAwait(false) && (args.Length > 0))
+            if (await TestMyTigerAsync(h, cts.Token).ConfigureAwait(false) && (args.Length > 0))
             {
-                await HashFileAsync(args[0], h).ConfigureAwait(false);
+                await HashFileAsync(args[0], h, cts.Token).ConfigureAwait(false);
             }
         }
 
         using (HashAlgorithm ha = new Tiger160())
         {
-            _ = await TestMyTigerAsync(ha).ConfigureAwait(false);
+            _ = await TestMyTigerAsync(ha, cts.Token).ConfigureAwait(false);
         }
 
         using (HashAlgorithm ha = new Tiger128())
         {
-            _ = await TestMyTigerAsync(ha).ConfigureAwait(false);
+            _ = await TestMyTigerAsync(ha, cts.Token).ConfigureAwait(false);
         }
 
-        _ = await In.ReadLineAsync().ConfigureAwait(false);
+        _ = await In.ReadLineAsync(cts.Token).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Tests the Tiger algorithm.
     /// </summary>
     /// <param name="h">The hash algorithm.</param>
+    /// <param name="token">The optional cancellation token.</param>
     /// <returns><c>true</c> if the test succeeds, <c>false</c> otherwise.</returns>
-    private static async Task<bool> TestMyTigerAsync(IDisposable h)
+    private static async Task<bool> TestMyTigerAsync(IDisposable h, CancellationToken token = default)
     {
         if (h is not TigerFull h1)
         {
@@ -99,7 +103,7 @@ internal static class TestTiger
 
         List<byte> hash = [.. h1.SelfTest()];
 
-        await OutputHashAsync(hash).ConfigureAwait(false);
+        await OutputHashAsync(hash, token).ConfigureAwait(false);
         await Out.WriteLineAsync(string.Format(
             CurrentCulture,
             "Tiger/{0} {1}",
@@ -113,7 +117,8 @@ internal static class TestTiger
     /// </summary>
     /// <param name="fileName">Name of the file.</param>
     /// <param name="h">The hash algorithm.</param>
-    private static async Task HashFileAsync(string fileName, HashAlgorithm h)
+    /// <param name="token">The optional cancellation token.</param>
+    private static async Task HashFileAsync(string fileName, HashAlgorithm h, CancellationToken token = default)
     {
         Stopwatch stopwatch;
         FileInfo fi = new(fileName);
@@ -129,7 +134,7 @@ internal static class TestTiger
             stopwatch = Stopwatch.StartNew();
             try
             {
-                _ = await h.ComputeHashAsync(s).ConfigureAwait(false);
+                _ = await h.ComputeHashAsync(s, token).ConfigureAwait(false);
             }
             finally
             {
@@ -138,7 +143,7 @@ internal static class TestTiger
         }
 
         await Out.WriteAsync(string.Format(CurrentCulture, "\"{0}\": ", fileName)).ConfigureAwait(false);
-        await OutputHashAsync(h.Hash).ConfigureAwait(false);
+        await OutputHashAsync(h.Hash, token).ConfigureAwait(false);
         await Out.WriteLineAsync(string.Format(
             CurrentCulture,
             "Time: {0}",
@@ -153,11 +158,22 @@ internal static class TestTiger
     /// Outputs the hash.
     /// </summary>
     /// <param name="hash">The hash.</param>
-    private static async Task OutputHashAsync(IEnumerable<byte> hash)
+    /// <param name="token">The optional cancellation token.</param>
+    private static async Task OutputHashAsync(IEnumerable<byte> hash, CancellationToken token = default)
     {
         foreach (byte by in hash)
         {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
             await Out.WriteAsync(by.ToString("X", InvariantCulture)).ConfigureAwait(false);
+        }
+
+        if (token.IsCancellationRequested)
+        {
+            return;
         }
 
         await Out.WriteLineAsync().ConfigureAwait(false);

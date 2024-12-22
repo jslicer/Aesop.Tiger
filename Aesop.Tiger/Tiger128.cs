@@ -54,7 +54,7 @@ public class Tiger128 : TigerFull
     /// </summary>
     /// <param name="passes">The number of calculation passes.</param>
     public Tiger128(in int passes = DefaultPasses)
-        : base(passes) => this.HashSizeValue = HashSizeInBytes << 3;
+        : base(passes) => HashSizeValue = HashSizeInBytes << 3;
 
     /// <inheritdoc />
     /// <summary>
@@ -77,9 +77,9 @@ public class Tiger128 : TigerFull
             0x7b, 0x53, 0xf7, 0x8e,
         ];
 
-        this.Initialize();
+        Initialize();
 
-        byte[] hash = this.ComputeHash(ASCII.GetBytes(TestData));
+        byte[] hash = ComputeHash(ASCII.GetBytes(TestData));
 
         return hash.SequenceEqual(testHash) ? hash : [];
     }
@@ -106,10 +106,10 @@ public class Tiger128 : TigerFull
             0x7b, 0x53, 0xf7, 0x8e,
         ];
 
-        this.Initialize();
+        Initialize();
 
         Span<byte> hash = stackalloc byte[HashSizeInBytes];
-        bool success = this.TryComputeHash(ASCII.GetBytes(TestData), hash, out int bytesWritten);
+        bool success = TryComputeHash(ASCII.GetBytes(TestData), hash, out int bytesWritten);
 
         // ReSharper disable once ComplexConditionExpression
         if (!success || bytesWritten != hash.Length || !hash.SequenceEqual(testHash))
