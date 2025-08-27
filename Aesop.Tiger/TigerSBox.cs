@@ -31,6 +31,8 @@
 
 namespace Aesop;
 
+using System;
+
 /// <summary>
 /// A class with the S-Box constants.
 /// </summary>
@@ -41,7 +43,7 @@ internal static class TigerSBox
     /// Gets the first S-Box table.
     /// </summary>
     // ReSharper disable once StyleCop.SA1500
-    public static ulong[] Table1 { get; } =
+    public static ReadOnlySpan<ulong> Table1 =>
     [
         0x02aab17cf7e90c5e, 0xac424b03e243a8ec, 0x72cd5be30dd5fcd3, 0x6d019b93f6f97f3a,
         0xcd9978ffd21f9193, 0x7573a1c9708029e2, 0xb164326b922a83c3, 0x46883eee04915870,
@@ -113,7 +115,7 @@ internal static class TigerSBox
     /// Gets the second S-Box table.
     /// </summary>
     // ReSharper disable once StyleCop.SA1500
-    public static ulong[] Table2 { get; } =
+    public static ReadOnlySpan<ulong> Table2 =>
     [
         0xe6a6be5a05a12138, 0xb5a122a5b4f87c98, 0x563c6089140b6990, 0x4c46cb2e391f5dd5,
         0xd932addbc9b79434, 0x08ea70e42015aff5, 0xd765a6673e478cf1, 0xc4fb757eab278d99,
@@ -185,7 +187,7 @@ internal static class TigerSBox
     /// Gets the third S-Box table.
     /// </summary>
     // ReSharper disable once StyleCop.SA1500
-    public static ulong[] Table3 { get; } =
+    public static ReadOnlySpan<ulong> Table3 =>
     [
         0xf49fcc2ff1daf39b, 0x487fd5c66ff29281, 0xe8a30667fcdca83f, 0x2c9b4be3d2fcce63,
         0xda3ff74b93fbbbc2, 0x2fa165d2fe70ba66, 0xa103e279970e93d4, 0xbecdec77b0e45e71,
@@ -257,7 +259,7 @@ internal static class TigerSBox
     /// Gets the fourth S-Box table.
     /// </summary>
     // ReSharper disable once StyleCop.SA1500
-    public static ulong[] Table4 { get; } =
+    public static ReadOnlySpan<ulong> Table4 =>
     [
         0x5b0e608526323c55, 0x1a46c1a9fa1b59f5, 0xa9e245a17c4c8ffa, 0x65ca5159db2955d7,
         0x05db0a76ce35afc2, 0x81eac77ea9113d45, 0x528ef88ab6ac0a0d, 0xa09ea253597be3ff,

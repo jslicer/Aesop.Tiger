@@ -123,6 +123,7 @@ internal static class TestTiger
         Stopwatch stopwatch;
         FileInfo fi = new(fileName);
 
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
         await using (Stream s = new FileStream(
             fi.FullName,
             FileMode.Open,
@@ -130,6 +131,7 @@ internal static class TestTiger
             FileShare.Read,
             (int)fi.Length,
             FileOptions.SequentialScan))
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
         {
             stopwatch = Stopwatch.StartNew();
             try

@@ -33,6 +33,7 @@ namespace Aesop;
 
 using System;
 using System.Linq;
+using System.Text;
 
 using static System.Text.Encoding;
 
@@ -61,11 +62,11 @@ public class Tiger160 : TigerFull
     /// Provides a self-test of the algorithm.
     /// </summary>
     /// <returns>The hash code if the self-test succeeds, an empty <see cref="byte" /> array otherwise.</returns>
-    /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
-    /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
-    /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
-    /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
+    /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
+    /// set to <see cref="EncoderExceptionFallback" />.</exception>
     public override byte[] SelfTest()
     {
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
@@ -91,11 +92,11 @@ public class Tiger160 : TigerFull
     /// </summary>
     /// <returns>The hash code if the self-test succeeds, an empty byte <see cref="ReadOnlySpan{T}" />
     /// otherwise.</returns>
-    /// <exception cref="T:System.ArgumentNullException"> buffer is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ObjectDisposedException">The object has already been disposed.</exception>
-    /// <exception cref="T:System.Text.EncoderFallbackException">A fall-back occurred (see Character Encoding in
-    /// the .NET Framework for complete explanation)-and- <see cref="P:System.Text.Encoding.EncoderFallback" /> is
-    /// set to <see cref="T:System.Text.EncoderExceptionFallback" />.</exception>
+    /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
+    /// set to <see cref="EncoderExceptionFallback" />.</exception>
     public override ReadOnlySpan<byte> SelfTestTry()
     {
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";

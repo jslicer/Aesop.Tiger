@@ -42,7 +42,9 @@ using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 /// Tests the functionality of the <see cref="Tiger160" /> class.
 /// </summary>
 [TestClass]
+#pragma warning disable CA1515 // Consider making public types internal
 public sealed class Tiger160Tests
+#pragma warning restore CA1515 // Consider making public types internal
 {
     /// <summary>
     /// The default number of calculation passes.
@@ -56,7 +58,7 @@ public sealed class Tiger160Tests
     public void TestSelfTest()
     {
         using TigerFull h = new Tiger160();
-        IsTrue(h.SelfTest().Length > 0);
+        IsGreaterThan(0, h.SelfTest().Length);
     }
 
     /// <summary>
@@ -66,7 +68,7 @@ public sealed class Tiger160Tests
     public void TestSelfTestTry()
     {
         using TigerFull h = new Tiger160();
-        IsTrue(h.SelfTestTry().Length > 0);
+        IsGreaterThan(0, h.SelfTestTry().Length);
     }
 
     /// <summary>

@@ -33,7 +33,9 @@
 namespace Aesop;
 
 using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 /// <inheritdoc />
@@ -101,7 +103,7 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     public int Passes { get; } = passes;
 
     /// <inheritdoc />
-    /// <summary>Initializes an implementation of the <see cref="T:System.Security.Cryptography.HashAlgorithm" />
+    /// <summary>Initializes an implementation of the <see cref="HashAlgorithm" />
     /// class.</summary>
     public override void Initialize()
     {
@@ -157,7 +159,7 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
                 toCopy = cbSize;
             }
 
-            Array.Copy(array, ibStart, _byteBuffer, _byteBufferPos, toCopy);
+            array.AsSpan(ibStart, toCopy).CopyTo(_byteBuffer.AsSpan(_byteBufferPos));
             ibStart += toCopy;
             cbSize -= toCopy;
             _byteBufferPos += toCopy;
@@ -166,8 +168,7 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
                 return;
             }
 
-            (_a, _b, _c) =
-                ProcessBlock(_a, _b, _c, _byteBuffer, _ulongBuffer);
+            ProcessBlock(ref _a, ref _b, ref _c, _byteBuffer, _ulongBuffer);
             _byteBufferPos = 0;
             toCopy = BlockSizeInBytes;
         }
@@ -200,49 +201,85 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     // ReSharper disable once MethodTooLong
     protected override bool TryHashFinal(Span<byte> destination, out int bytesWritten)
     {
-        _byteBuffer[_byteBufferPos] = 1;
-        _byteBufferPos++;
+        _byteBuffer[_byteBufferPos++] = 1;
         if (_byteBufferPos >= BlockSizeInBytes - 8)
         {
-            Array.Clear(_byteBuffer, _byteBufferPos, BlockSizeInBytes - _byteBufferPos);
-            (_a, _b, _c) =
-                ProcessBlock(_a, _b, _c, _byteBuffer, _ulongBuffer);
+            _byteBuffer.AsSpan(_byteBufferPos, BlockSizeInBytes - _byteBufferPos).Clear();
+            ProcessBlock(ref _a, ref _b, ref _c, _byteBuffer, _ulongBuffer);
             _byteBufferPos = 0;
         }
 
-        Array.Clear(_byteBuffer, _byteBufferPos, BlockSizeInBytes - _byteBufferPos - 8);
-        LongToBytes(_len << 3, _byteBuffer, BlockSizeInBytes - 8);
-        (_a, _b, _c) =
-            ProcessBlock(_a, _b, _c, _byteBuffer, _ulongBuffer);
+        _byteBuffer.AsSpan(_byteBufferPos, BlockSizeInBytes - _byteBufferPos - 8).Clear();
+        BinaryPrimitives.WriteUInt64LittleEndian(_byteBuffer.AsSpan(BlockSizeInBytes - 8, 8), _len << 3);
+        ProcessBlock(ref _a, ref _b, ref _c, _byteBuffer, _ulongBuffer);
 
-        byte[] result = new byte[HashSizeInBytes];
-        int actualHashSizeInBytes = HashSize >> 3;
+        int actual = HashSize >> 3;
 
-        LongToBytes(_a, result, 0);
-        LongToBytes(_b, result, 8);
-        LongToBytes(_c, result, 16);
-        result.AsSpan(HashSizeInBytes - actualHashSizeInBytes, actualHashSizeInBytes).CopyTo(destination);
-        bytesWritten = actualHashSizeInBytes;
+        if (destination.Length < actual)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        Span<byte> biggerDestination = stackalloc byte[HashSizeInBytes];
+
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(biggerDestination), _a);
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(biggerDestination), 8), _b);
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(biggerDestination), 16), _c);
+        biggerDestination.Slice(HashSizeInBytes - actual, actual).CopyTo(destination);
+        bytesWritten = actual;
         return true;
     }
 
     // ReSharper disable once TooManyArguments
-    private static (ulong ap, ulong bp, ulong cp) Pass(
-        ulong ap,
-        ulong bp,
-        ulong cp,
-        in ulong[] ulongBuffer,
-        in ulong multiplier)
+    private static void Pass5(
+        ref ulong ap,
+        ref ulong bp,
+        ref ulong cp,
+        in ulong[] ulongBuffer)
     {
-        (ap, bp, cp) = Round(ap, bp, cp, ulongBuffer[0], multiplier);
-        (bp, cp, ap) = Round(bp, cp, ap, ulongBuffer[1], multiplier);
-        (cp, ap, bp) = Round(cp, ap, bp, ulongBuffer[2], multiplier);
-        (ap, bp, cp) = Round(ap, bp, cp, ulongBuffer[3], multiplier);
-        (bp, cp, ap) = Round(bp, cp, ap, ulongBuffer[4], multiplier);
-        (cp, ap, bp) = Round(cp, ap, bp, ulongBuffer[5], multiplier);
-        (ap, bp, cp) = Round(ap, bp, cp, ulongBuffer[6], multiplier);
-        (bp, cp, ap) = Round(bp, cp, ap, ulongBuffer[7], multiplier);
-        return (ap, bp, cp);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 5);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 5);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 5);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 5);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 5);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 5);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 5);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 5);
+    }
+
+    // ReSharper disable once TooManyArguments
+    private static void Pass7(
+        ref ulong ap,
+        ref ulong bp,
+        ref ulong cp,
+        in ulong[] ulongBuffer)
+    {
+        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 7);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 7);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 7);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 7);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 7);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 7);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 7);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 7);
+    }
+
+    // ReSharper disable once TooManyArguments
+    private static void Pass9(
+        ref ulong ap,
+        ref ulong bp,
+        ref ulong cp,
+        in ulong[] ulongBuffer)
+    {
+        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 9);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 9);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 9);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 9);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 9);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 9);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 9);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 9);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -273,91 +310,97 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     //// ReSharper disable once TooManyArguments
-    private static (ulong ar, ulong br, ulong cr) Round(
-        ulong ar,
-        ulong br,
-        ulong cr,
+    // ReSharper disable once MethodTooLong
+    private static void Round(
+        ref ulong ar,
+        ref ulong br,
+        ref ulong cr,
         in ulong ulongBuffer,
         in ulong multiplier)
     {
         cr ^= ulongBuffer;
-        //// ReSharper disable once ComplexConditionExpression
-        ar -= TigerSBox.Table1[cr & 0xff] ^
-              TigerSBox.Table2[(cr >> 16) & 0xff] ^
-              TigerSBox.Table3[(cr >> 32) & 0xff] ^
-              TigerSBox.Table4[(cr >> 48) & 0xff];
-        //// ReSharper disable once ComplexConditionExpression
-        br += TigerSBox.Table4[(cr >> 8) & 0xff] ^
-              TigerSBox.Table3[(cr >> 24) & 0xff] ^
-              TigerSBox.Table2[(cr >> 40) & 0xff] ^
-              TigerSBox.Table1[(cr >> 56) & 0xff];
+
+        ref readonly ulong t1Ref = ref MemoryMarshal.GetReference(TigerSBox.Table1);
+        ref readonly ulong t2Ref = ref MemoryMarshal.GetReference(TigerSBox.Table2);
+        ref readonly ulong t3Ref = ref MemoryMarshal.GetReference(TigerSBox.Table3);
+        ref readonly ulong t4Ref = ref MemoryMarshal.GetReference(TigerSBox.Table4);
+
+        int i0 = (int)(cr & 0xff);
+        //// ReSharper disable ComplexConditionExpression
+        int i1 = (int)((cr >> 16) & 0xff);
+        int i2 = (int)((cr >> 32) & 0xff);
+        int i3 = (int)((cr >> 48) & 0xff);
+        //// ReSharper restore ComplexConditionExpression
+
+        // ReSharper disable once ComplexConditionExpression
+        ar -= Unsafe.Add(ref Unsafe.AsRef(in t1Ref), i0)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in t2Ref), i1)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in t3Ref), i2)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in t4Ref), i3);
+
+        //// ReSharper disable ComplexConditionExpression
+        int j0 = (int)((cr >> 8) & 0xff);
+        int j1 = (int)((cr >> 24) & 0xff);
+        int j2 = (int)((cr >> 40) & 0xff);
+        int j3 = (int)((cr >> 56) & 0xff);
+        //// ReSharper restore ComplexConditionExpression
+
+        // ReSharper disable once ComplexConditionExpression
+        br += Unsafe.Add(ref Unsafe.AsRef(in t4Ref), j0)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in t3Ref), j1)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in t2Ref), j2)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in t1Ref), j3);
         br *= multiplier;
-        return (ar, br, cr);
-    }
-
-    private static void LongToBytes(ulong ulVal, in byte[] byteBuffer, int nIdxBuffer)
-    {
-        const int BytesInALong = 8;
-        const int BitsInAByte = 8;
-        int end = nIdxBuffer + BytesInALong;
-
-        while (nIdxBuffer < end)
-        {
-            byteBuffer[nIdxBuffer++] = (byte)(ulVal & 0xff);
-            ulVal >>= BitsInAByte;
-        }
     }
 
     // ReSharper disable once TooManyArguments
-    private (ulong ap, ulong bp, ulong cp) ProcessBlock(
-        in ulong ap,
-        in ulong bp,
-        in ulong cp,
+    private void ProcessBlock(
+        ref ulong ap,
+        ref ulong bp,
+        ref ulong cp,
         in byte[] byteBuffer1,
         in ulong[] ulongBuffer1)
     {
-        int pos = 0;
-        int i = 0;
+        Span<ulong> ulongSpan = MemoryMarshal.Cast<byte, ulong>(byteBuffer1.AsSpan());
 
-        while (pos < BlockSizeInBytes)
+        ulongSpan.CopyTo(ulongBuffer1);
+        if (!BitConverter.IsLittleEndian)
         {
-            //// ReSharper disable once ComplexConditionExpression
-            _ulongBuffer[i++] =
-                ((ulong)byteBuffer1[pos++] & 0xff) |
-                (((ulong)byteBuffer1[pos++] & 0xff) << 8) |
-                (((ulong)byteBuffer1[pos++] & 0xff) << 16) |
-                (((ulong)byteBuffer1[pos++] & 0xff) << 24) |
-                (((ulong)byteBuffer1[pos++] & 0xff) << 32) |
-                (((ulong)byteBuffer1[pos++] & 0xff) << 40) |
-                (((ulong)byteBuffer1[pos++] & 0xff) << 48) |
-                ((ulong)byteBuffer1[pos++] << 56);
+            for (int i = 0; i < 8; i++)
+            {
+                ulongBuffer1[i] = BinaryPrimitives.ReverseEndianness(ulongBuffer1[i]);
+            }
         }
 
-        return Compress(ap, bp, cp, ulongBuffer1);
+        Compress(ref ap, ref bp, ref cp, ulongBuffer1);
     }
 
     // ReSharper disable once TooManyArguments
-    private (ulong ac, ulong bc, ulong cc) Compress(ulong ac, ulong bc, ulong cc1, in ulong[] ulongBuffer1)
+    private void Compress(ref ulong ac, ref ulong bc, ref ulong cc1, in ulong[] ulongBuffer1)
     {
         SaveAbc(ac, bc, cc1);
-        (ac, bc, cc1) = Pass(ac, bc, cc1, ulongBuffer1, 5);
+        Pass5(ref ac, ref bc, ref cc1, ulongBuffer1);
         KeySchedule(ulongBuffer1);
-        (cc1, ac, bc) = Pass(cc1, ac, bc, ulongBuffer1, 7);
+        Pass7(ref cc1, ref ac, ref bc, ulongBuffer1);
         KeySchedule(ulongBuffer1);
-        (bc, cc1, ac) = Pass(bc, cc1, ac, ulongBuffer1, 9);
-
+        Pass9(ref bc, ref cc1, ref ac, ulongBuffer1);
         for (int passNumber = DefaultPasses; passNumber < Passes; passNumber++)
         {
-            (cc1, ac, bc) = Pass(ac, bc, cc1, ulongBuffer1, 9);
+            Pass9(ref ac, ref bc, ref cc1, ulongBuffer1);
+            (ac, bc, cc1) = (bc, cc1, ac);
         }
 
-        return FeedForward(ac, bc, cc1);
+        FeedForward(ref ac, ref bc, ref cc1);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SaveAbc(in ulong av, in ulong bv, in ulong cv) => (_aa, _bb, _cc) = (av, bv, cv);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private (ulong af, ulong bf, ulong cf) FeedForward(in ulong af, in ulong bf, in ulong cf) =>
-        (af ^ _aa, bf - _bb, cf + _cc);
+    private void FeedForward(ref ulong a, ref ulong b, ref ulong c)
+    {
+        a ^= _aa;
+        b -= _bb;
+        c += _cc;
+    }
 }
