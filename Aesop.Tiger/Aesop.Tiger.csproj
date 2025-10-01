@@ -23,7 +23,7 @@
         <AssemblyVersion>2.0.0.2</AssemblyVersion>
         <FileVersion>$(AssemblyVersion)</FileVersion>
         <Version>$(AssemblyVersion)</Version>
-        <SignAssembly>True</SignAssembly>
+        <SignAssembly>False</SignAssembly>
         <AssemblyOriginatorKeyFile>D:\Aesop.Tiger\Aesop.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 

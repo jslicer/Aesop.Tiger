@@ -8,7 +8,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <SignAssembly>True</SignAssembly>
+    <SignAssembly>False</SignAssembly>
 
     <AssemblyOriginatorKeyFile>..\Aesop.snk</AssemblyOriginatorKeyFile>
 
