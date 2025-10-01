@@ -32,7 +32,6 @@
 namespace Aesop;
 
 using System;
-using System.Linq;
 using System.Text;
 
 using static System.Text.Encoding;

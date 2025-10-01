@@ -30,7 +30,9 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 // Ignore Spelling: ib
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Aesop;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 using System;
 using System.Buffers.Binary;
@@ -47,7 +49,7 @@ using System.Security.Cryptography;
 /// Initializes a new instance of the <see cref="TigerFull" /> class.
 /// </remarks>
 /// <param name="passes">The number of calculation passes.</param>
-public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashAlgorithm
+public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgorithm
 {
     /// <summary>
     /// The default number of calculation passes.
@@ -236,7 +238,7 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
-        in ulong[] ulongBuffer)
+        ulong[] ulongBuffer)
     {
         Round(ref ap, ref bp, ref cp, ulongBuffer[0], 5);
         Round(ref bp, ref cp, ref ap, ulongBuffer[1], 5);
@@ -253,7 +255,7 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
-        in ulong[] ulongBuffer)
+        ulong[] ulongBuffer)
     {
         Round(ref ap, ref bp, ref cp, ulongBuffer[0], 7);
         Round(ref bp, ref cp, ref ap, ulongBuffer[1], 7);
@@ -270,7 +272,7 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
-        in ulong[] ulongBuffer)
+        ulong[] ulongBuffer)
     {
         Round(ref ap, ref bp, ref cp, ulongBuffer[0], 9);
         Round(ref bp, ref cp, ref ap, ulongBuffer[1], 9);
@@ -282,9 +284,9 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
         Round(ref bp, ref cp, ref ap, ulongBuffer[7], 9);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     //// ReSharper disable once MethodTooLong
-    private static void KeySchedule(in ulong[] ulongBuffer)
+    private static void KeySchedule(ulong[] ulongBuffer)
     {
         ulongBuffer[0] -= ulongBuffer[7] ^ 0xa5a5a5a5a5a5a5a5;
         ulongBuffer[1] ^= ulongBuffer[0];
@@ -308,15 +310,15 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
         ulongBuffer[7] -= ulongBuffer[6] ^ 0x0123456789abcdef;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     //// ReSharper disable once TooManyArguments
     // ReSharper disable once MethodTooLong
     private static void Round(
         ref ulong ar,
         ref ulong br,
         ref ulong cr,
-        in ulong ulongBuffer,
-        in ulong multiplier)
+        ulong ulongBuffer,
+        ulong multiplier)
     {
         cr ^= ulongBuffer;
 
@@ -354,12 +356,13 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     }
 
     // ReSharper disable once TooManyArguments
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void ProcessBlock(
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
-        in byte[] byteBuffer1,
-        in ulong[] ulongBuffer1)
+        byte[] byteBuffer1,
+        ulong[] ulongBuffer1)
     {
         Span<ulong> ulongSpan = MemoryMarshal.Cast<byte, ulong>(byteBuffer1.AsSpan());
 
@@ -376,7 +379,8 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     }
 
     // ReSharper disable once TooManyArguments
-    private void Compress(ref ulong ac, ref ulong bc, ref ulong cc1, in ulong[] ulongBuffer1)
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    private void Compress(ref ulong ac, ref ulong bc, ref ulong cc1, ulong[] ulongBuffer1)
     {
         SaveAbc(ac, bc, cc1);
         Pass5(ref ac, ref bc, ref cc1, ulongBuffer1);
@@ -394,9 +398,9 @@ public abstract class TigerFull(in int passes = TigerFull.DefaultPasses) : HashA
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void SaveAbc(in ulong av, in ulong bv, in ulong cv) => (_aa, _bb, _cc) = (av, bv, cv);
+    private void SaveAbc(ulong av, ulong bv, ulong cv) => (_aa, _bb, _cc) = (av, bv, cv);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     private void FeedForward(ref ulong a, ref ulong b, ref ulong c)
     {
         a ^= _aa;

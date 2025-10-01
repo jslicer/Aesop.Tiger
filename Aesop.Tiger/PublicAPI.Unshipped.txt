@@ -8,7 +8,7 @@ Aesop.Tiger192
 Aesop.Tiger192.Tiger192(in int passes = 3) -> void
 Aesop.TigerFull
 Aesop.TigerFull.Passes.get -> int
-Aesop.TigerFull.TigerFull(in int passes = 3) -> void
+Aesop.TigerFull.TigerFull(int passes = 3) -> void
 const Aesop.TigerFull.DefaultPasses = 3 -> int
 override Aesop.Tiger128.SelfTest() -> byte[]!
 override Aesop.Tiger128.SelfTestTry() -> System.ReadOnlySpan<byte>
