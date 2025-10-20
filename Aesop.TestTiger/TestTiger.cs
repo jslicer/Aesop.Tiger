@@ -101,7 +101,7 @@ internal static class TestTiger
             return true;
         }
 
-        List<byte> hash = [.. h1.SelfTest()];
+        List<byte> hash = [.. h1.SelfTestPass().Hash];
 
         await OutputHashAsync(hash, token).ConfigureAwait(false);
         await Out.WriteLineAsync(string.Format(

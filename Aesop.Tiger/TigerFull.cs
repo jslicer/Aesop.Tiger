@@ -36,6 +36,7 @@ namespace Aesop;
 
 using System;
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -119,14 +120,26 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// <summary>
     /// Provides a self-test of the algorithm in derived classes.
     /// </summary>
-    /// <returns>The hash code if the self-test succeeds, an empty <see cref="byte" /> array otherwise.</returns>
-    public abstract byte[] SelfTest();
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
+    public abstract (bool Success, byte[] Hash) SelfTestPass();
 
     /// <summary>
     /// Provides a self-test of the algorithm in span mode in derived classes.
     /// </summary>
-    /// <returns>The hash code if the self-test succeeds, an empty byte <see cref="ReadOnlySpan{T}" /> otherwise.</returns>
-    public abstract ReadOnlySpan<byte> SelfTestTry();
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
+    public abstract bool SelfTestTryPass();
+
+    /// <summary>
+    /// Provides a self-test of the algorithm in derived classes.
+    /// </summary>
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
+    public abstract bool SelfTestFail();
+
+    /// <summary>
+    /// Provides a self-test of the algorithm in span mode in derived classes.
+    /// </summary>
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
+    public abstract bool SelfTestTryFail();
 
     /// <inheritdoc />
     /// <summary>When overridden in a derived class, routes data written to the object into the hash algorithm for
@@ -189,7 +202,8 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     {
         Span<byte> bytes = stackalloc byte[HashSize >> 3];
 
-        return TryHashFinal(bytes, out int _) ? bytes.ToArray() : [];
+        TryHashFinal(bytes, out int _);
+        return bytes.ToArray();
     }
 
     /// <summary>
@@ -215,15 +229,8 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         BinaryPrimitives.WriteUInt64LittleEndian(_byteBuffer.AsSpan(BlockSizeInBytes - 8, 8), _len << 3);
         ProcessBlock(ref _a, ref _b, ref _c, _byteBuffer, _ulongBuffer);
 
-        int actual = HashSize >> 3;
-
-        if (destination.Length < actual)
-        {
-            bytesWritten = 0;
-            return false;
-        }
-
         Span<byte> biggerDestination = stackalloc byte[HashSizeInBytes];
+        int actual = HashSize >> 3;
 
         Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(biggerDestination), _a);
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(biggerDestination), 8), _b);

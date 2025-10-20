@@ -29,7 +29,9 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Aesop;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 using System;
 using System.Text;
@@ -60,13 +62,13 @@ public class Tiger192 : TigerFull
     /// <summary>
     /// Provides a self-test of the algorithm.
     /// </summary>
-    /// <returns>The hash code if the self-test succeeds, an empty <see cref="byte" /> array otherwise.</returns>
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
     /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
     /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
     /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
     /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
     /// set to <see cref="EncoderExceptionFallback" />.</exception>
-    public override byte[] SelfTest()
+    public override (bool Success, byte[] Hash) SelfTestPass()
     {
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
         byte[] testHash =
@@ -83,20 +85,19 @@ public class Tiger192 : TigerFull
 
         byte[] hash = ComputeHash(ASCII.GetBytes(TestData));
 
-        return hash.SequenceEqual(testHash) ? hash : [];
+        return (hash.SequenceEqual(testHash), hash);
     }
 
     /// <summary>
     /// Provides a self-test of the algorithm in span mode.
     /// </summary>
-    /// <returns>The hash code if the self-test succeeds, an empty byte <see cref="ReadOnlySpan{T}" />
-    /// otherwise.</returns>
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
     /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
     /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
     /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
     /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
     /// set to <see cref="EncoderExceptionFallback" />.</exception>
-    public override ReadOnlySpan<byte> SelfTestTry()
+    public override bool SelfTestTryPass()
     {
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
         byte[] testHash =
@@ -115,14 +116,67 @@ public class Tiger192 : TigerFull
         bool success = TryComputeHash(ASCII.GetBytes(TestData), hash, out int bytesWritten);
 
         // ReSharper disable once ComplexConditionExpression
-        if (!success || bytesWritten != hash.Length || !hash.SequenceEqual(testHash))
-        {
-            return [];
-        }
+        return success && bytesWritten == hash.Length && hash.SequenceEqual(testHash);
+    }
 
-        byte[] hashArray = new byte[hash.Length];
+    /// <inheritdoc />
+    /// <summary>
+    /// Provides a self-test of the algorithm.
+    /// </summary>
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
+    /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
+    /// set to <see cref="EncoderExceptionFallback" />.</exception>
+    public override bool SelfTestFail()
+    {
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+        byte[] testHash =
+        [
+            0x0f, 0x7b, 0xf9, 0xa1,
+            0x9b, 0x9c, 0x58, 0xf2,
+            0xb7, 0x61, 0x0d, 0xf8,
+            0xe9, 0x4f, 0x0a, 0xc3,
+            0xa7, 0x1c, 0x63, 0x1e,
+            0x7b, 0x53, 0xf7, 0x8e,
+        ];
 
-        hash.CopyTo(hashArray);
-        return new(hashArray);
+        Initialize();
+
+        byte[] hash = ComputeHash(ASCII.GetBytes(TestData));
+
+        return hash.SequenceEqual(testHash);
+    }
+
+    /// <summary>
+    /// Provides a self-test of the algorithm in span mode.
+    /// </summary>
+    /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
+    /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
+    /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
+    /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
+    /// set to <see cref="EncoderExceptionFallback" />.</exception>
+    public override bool SelfTestTryFail()
+    {
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+        byte[] testHash =
+        [
+            0x0f, 0x7b, 0xf9, 0xa1,
+            0x9b, 0x9c, 0x58, 0xf2,
+            0xb7, 0x61, 0x0d, 0xf8,
+            0xe9, 0x4f, 0x0a, 0xc3,
+            0xa7, 0x1c, 0x63, 0x1e,
+            0x7b, 0x53, 0xf7, 0x8e,
+        ];
+
+        Initialize();
+
+        Span<byte> hash = stackalloc byte[HashSizeInBytes];
+        bool success = TryComputeHash(ASCII.GetBytes(TestData), hash, out int bytesWritten);
+
+        // ReSharper disable once ComplexConditionExpression
+        return success && bytesWritten == hash.Length && hash.SequenceEqual(testHash);
     }
 }

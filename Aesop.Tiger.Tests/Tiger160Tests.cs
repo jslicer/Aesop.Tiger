@@ -43,6 +43,7 @@ using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 /// </summary>
 [TestClass]
 #pragma warning disable CA1515 // Consider making public types internal
+//// ReSharper disable once UnusedType.Global
 public sealed class Tiger160Tests
 #pragma warning restore CA1515 // Consider making public types internal
 {
@@ -55,26 +56,51 @@ public sealed class Tiger160Tests
     /// Runs the self-test of the <see cref="Tiger160" /> class and asserts its success.
     /// </summary>
     [TestMethod]
-    public void TestSelfTest()
+    //// ReSharper disable once UnusedMember.Global
+    public void TestSelfTestPass()
     {
         using TigerFull h = new Tiger160();
-        IsGreaterThan(0, h.SelfTest().Length);
+        IsTrue(h.SelfTestPass().Success);
     }
 
     /// <summary>
     /// Runs the self-test of the <see cref="Tiger160" /> class in span mode and asserts its success.
     /// </summary>
     [TestMethod]
-    public void TestSelfTestTry()
+    //// ReSharper disable once UnusedMember.Global
+    public void TestSelfTestTryPass()
     {
         using TigerFull h = new Tiger160();
-        IsGreaterThan(0, h.SelfTestTry().Length);
+        IsTrue(h.SelfTestTryPass());
+    }
+
+    /// <summary>
+    /// Runs the self-test of the <see cref="Tiger160" /> class and asserts its failure.
+    /// </summary>
+    [TestMethod]
+    //// ReSharper disable once UnusedMember.Global
+    public void TestSelfTestFail()
+    {
+        using TigerFull h = new Tiger160();
+        IsFalse(h.SelfTestFail());
+    }
+
+    /// <summary>
+    /// Runs the self-test of the <see cref="Tiger160" /> class in span mode and asserts its failure.
+    /// </summary>
+    [TestMethod]
+    //// ReSharper disable once UnusedMember.Global
+    public void TestSelfTestTryFail()
+    {
+        using TigerFull h = new Tiger160();
+        IsFalse(h.SelfTestTryFail());
     }
 
     /// <summary>
     /// Tests that <see cref="Tiger160" /> supports transforming multiple blocks.
     /// </summary>
     [TestMethod]
+    //// ReSharper disable once UnusedMember.Global
     public void TestCanTransformMultipleBlocks()
     {
         using HashAlgorithm h = new Tiger160();
@@ -85,6 +111,7 @@ public sealed class Tiger160Tests
     /// Tests <see cref="Tiger160" /> Passes property returns the proper default.
     /// </summary>
     [TestMethod]
+    //// ReSharper disable once UnusedMember.Global
     public void TestPasses()
     {
         using TigerFull h = new Tiger160();
@@ -95,6 +122,7 @@ public sealed class Tiger160Tests
     /// Tests <see cref="Tiger160" /> HashSize property returns the proper hash algorithm bit size.
     /// </summary>
     [TestMethod]
+    //// ReSharper disable once UnusedMember.Global
     public void TestHashSize()
     {
         using HashAlgorithm h = new Tiger160();
@@ -105,6 +133,7 @@ public sealed class Tiger160Tests
     /// Tests <see cref="Tiger160" /> for additional passes with a test string.
     /// </summary>
     [TestMethod]
+    //// ReSharper disable once UnusedMember.Global
     public void TestExtraPasses()
     {
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
@@ -129,6 +158,7 @@ public sealed class Tiger160Tests
     /// </summary>
     [TestMethod]
     //// ReSharper disable once TooManyDeclarations
+    //// ReSharper disable once UnusedMember.Global
     public void TestExtraPassesTry()
     {
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
@@ -153,5 +183,39 @@ public sealed class Tiger160Tests
         IsTrue(result);
         AreEqual(destination.Length, bytesWritten);
         IsTrue(destination.SequenceEqual(testHash));
+    }
+
+    /// <summary>
+    /// Tests <see cref="Tiger160" /> in span mode for additional passes with a test string.
+    /// </summary>
+    [TestMethod]
+    //// ReSharper disable once TooManyDeclarations
+    //// ReSharper disable once UnusedMember.Global
+    public void TestExtraPassesTryFail()
+    {
+        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
+        byte[] testHash =
+        [
+            0xc5, 0xad, 0x43, 0xa0,
+            0x90, 0x69, 0x95, 0xe9,
+            0xaa, 0xbf, 0xb2, 0x4f,
+            0x25, 0x5d, 0x20, 0x17,
+            0xf3, 0x7d, 0x39, 0xea,
+        ];
+        int inputByteCount = ASCII.GetByteCount(TestData);
+        Span<byte> bytes = stackalloc byte[inputByteCount];
+
+        _ = ASCII.GetBytes(TestData, bytes);
+        using HashAlgorithm h = new Tiger160(DefaultPasses + 1);
+
+        // ReSharper disable once ComplexConditionExpression
+#pragma warning disable IDE0302 // Simplify collection initialization
+        Span<byte> destination = stackalloc byte[0];
+#pragma warning restore IDE0302 // Simplify collection initialization
+        bool result = h.TryComputeHash(bytes, destination, out int bytesWritten);
+
+        IsFalse(result);
+        AreEqual(destination.Length, bytesWritten);
+        IsFalse(destination.SequenceEqual(testHash));
     }
 }

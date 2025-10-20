@@ -1,5 +1,7 @@
-﻿abstract Aesop.TigerFull.SelfTest() -> byte[]!
-abstract Aesop.TigerFull.SelfTestTry() -> System.ReadOnlySpan<byte>
+﻿abstract Aesop.TigerFull.SelfTestFail() -> bool
+abstract Aesop.TigerFull.SelfTestPass() -> (bool Success, byte[]! Hash)
+abstract Aesop.TigerFull.SelfTestTryFail() -> bool
+abstract Aesop.TigerFull.SelfTestTryPass() -> bool
 Aesop.Tiger128
 Aesop.Tiger128.Tiger128(in int passes = 3) -> void
 Aesop.Tiger160
@@ -10,12 +12,18 @@ Aesop.TigerFull
 Aesop.TigerFull.Passes.get -> int
 Aesop.TigerFull.TigerFull(int passes = 3) -> void
 const Aesop.TigerFull.DefaultPasses = 3 -> int
-override Aesop.Tiger128.SelfTest() -> byte[]!
-override Aesop.Tiger128.SelfTestTry() -> System.ReadOnlySpan<byte>
-override Aesop.Tiger160.SelfTest() -> byte[]!
-override Aesop.Tiger160.SelfTestTry() -> System.ReadOnlySpan<byte>
-override Aesop.Tiger192.SelfTest() -> byte[]!
-override Aesop.Tiger192.SelfTestTry() -> System.ReadOnlySpan<byte>
+override Aesop.Tiger128.SelfTestFail() -> bool
+override Aesop.Tiger128.SelfTestPass() -> (bool Success, byte[]! Hash)
+override Aesop.Tiger128.SelfTestTryFail() -> bool
+override Aesop.Tiger128.SelfTestTryPass() -> bool
+override Aesop.Tiger160.SelfTestFail() -> bool
+override Aesop.Tiger160.SelfTestPass() -> (bool Success, byte[]! Hash)
+override Aesop.Tiger160.SelfTestTryFail() -> bool
+override Aesop.Tiger160.SelfTestTryPass() -> bool
+override Aesop.Tiger192.SelfTestFail() -> bool
+override Aesop.Tiger192.SelfTestPass() -> (bool Success, byte[]! Hash)
+override Aesop.Tiger192.SelfTestTryFail() -> bool
+override Aesop.Tiger192.SelfTestTryPass() -> bool
 override Aesop.TigerFull.CanTransformMultipleBlocks.get -> bool
 override Aesop.TigerFull.HashCore(byte[]! array, int ibStart, int cbSize) -> void
 override Aesop.TigerFull.HashFinal() -> byte[]!
