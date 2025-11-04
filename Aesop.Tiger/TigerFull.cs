@@ -72,6 +72,11 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// </summary>
     private const int BlockSizeInUlongs = 8;
 
+    /// <summary>
+    /// Cached value indicating whether the system is little-endian.
+    /// </summary>
+    private static readonly bool IsLittleEndianSystem = BitConverter.IsLittleEndian;
+
     private readonly byte[] _byteBuffer = new byte[BlockSizeInBytes];
 
     private readonly ulong[] _ulongBuffer = new ulong[BlockSizeInUlongs];
@@ -163,29 +168,46 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     // ReSharper disable once MethodTooLong
     protected override void HashCore(byte[] array, int ibStart, int cbSize)
     {
-        int end = ibStart + cbSize;
-        int toCopy = BlockSizeInBytes - _byteBufferPos;
-
         _len += (ulong)cbSize;
-        while (ibStart < end)
+
+        // First, fill any partial block in the buffer
+        if (_byteBufferPos > 0)
         {
-            if (toCopy > cbSize)
-            {
-                toCopy = cbSize;
-            }
+            int toCopy = Math.Min(BlockSizeInBytes - _byteBufferPos, cbSize);
 
             array.AsSpan(ibStart, toCopy).CopyTo(_byteBuffer.AsSpan(_byteBufferPos));
             ibStart += toCopy;
             cbSize -= toCopy;
             _byteBufferPos += toCopy;
-            if (_byteBufferPos < BlockSizeInBytes)
+
+            if (_byteBufferPos == BlockSizeInBytes)
+            {
+                ProcessBlock(ref _a, ref _b, ref _c, _byteBuffer, _ulongBuffer);
+                _byteBufferPos = 0;
+            }
+            else
             {
                 return;
             }
+        }
 
-            ProcessBlock(ref _a, ref _b, ref _c, _byteBuffer, _ulongBuffer);
-            _byteBufferPos = 0;
-            toCopy = BlockSizeInBytes;
+        // Process complete blocks directly from the input array
+        int completeBlocks = cbSize / BlockSizeInBytes;
+
+        if (completeBlocks > 0)
+        {
+            ReadOnlySpan<byte> inputSpan = array.AsSpan(ibStart, completeBlocks * BlockSizeInBytes);
+
+            ProcessMultipleBlocks(inputSpan);
+            ibStart += completeBlocks * BlockSizeInBytes;
+            cbSize -= completeBlocks * BlockSizeInBytes;
+        }
+
+        // Copy any remaining bytes to the buffer
+        if (cbSize > 0)
+        {
+            array.AsSpan(ibStart, cbSize).CopyTo(_byteBuffer);
+            _byteBufferPos = cbSize;
         }
     }
 
@@ -363,26 +385,60 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     }
 
     // ReSharper disable once TooManyArguments
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ProcessBlock(
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
         byte[] byteBuffer1,
+        ulong[] ulongBuffer1) => ProcessBlockFromBytes(ref ap, ref bp, ref cp, byteBuffer1.AsSpan(), ulongBuffer1);
+
+    // ReSharper disable once TooManyArguments
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private void ProcessBlockFromBytes(
+        ref ulong ap,
+        ref ulong bp,
+        ref ulong cp,
+        ReadOnlySpan<byte> byteSpan,
         ulong[] ulongBuffer1)
     {
-        Span<ulong> ulongSpan = MemoryMarshal.Cast<byte, ulong>(byteBuffer1.AsSpan());
+        ReadOnlySpan<ulong> ulongSpan = MemoryMarshal.Cast<byte, ulong>(byteSpan);
 
-        ulongSpan.CopyTo(ulongBuffer1);
-        if (!BitConverter.IsLittleEndian)
+        if (IsLittleEndianSystem)
         {
-            for (int i = 0; i < 8; i++)
+            // On little-endian systems, we can directly use the span without copying
+            // if it's properly aligned, but for safety we copy to our buffer
+            ulongSpan.CopyTo(ulongBuffer1);
+        }
+        else
+        {
+            // On big-endian systems, we need to reverse endianness
+            ulongSpan.CopyTo(ulongBuffer1);
+            for (int i = 0; i < BlockSizeInUlongs; i++)
             {
                 ulongBuffer1[i] = BinaryPrimitives.ReverseEndianness(ulongBuffer1[i]);
             }
         }
 
         Compress(ref ap, ref bp, ref cp, ulongBuffer1);
+    }
+
+    /// <summary>
+    /// Processes multiple complete blocks directly from the input span.
+    /// </summary>
+    /// <param name="input">The input span containing complete blocks (must be a multiple of BlockSizeInBytes).</param>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private void ProcessMultipleBlocks(ReadOnlySpan<byte> input)
+    {
+        Debug.Assert(input.Length % BlockSizeInBytes == 0, "Input must contain complete blocks");
+
+        int blockCount = input.Length / BlockSizeInBytes;
+
+        for (int i = 0; i < blockCount; i++)
+        {
+            ReadOnlySpan<byte> block = input.Slice(i * BlockSizeInBytes, BlockSizeInBytes);
+            ProcessBlockFromBytes(ref _a, ref _b, ref _c, block, _ulongBuffer);
+        }
     }
 
     // ReSharper disable once TooManyArguments
