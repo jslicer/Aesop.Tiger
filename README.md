@@ -21,3 +21,8 @@ using (HashAlgorithm h = new Tiger192())
     await OutputHashAsync(h.Hash).ConfigureAwait(false);
 }
 ```   
+## Benchmark Results
+
+<!-- BENCHMARK_RESULTS_START -->
+_No benchmark results yet. They will be updated automatically by GitHub Actions._
+<!-- BENCHMARK_RESULTS_END -->
