@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Aesop.snk" />
+  </Folder>
+  <Project Path="Aesop.TestTiger/Aesop.TestTiger.csproj" />
+  <Project Path="Aesop.Tiger.Benchmarks/Aesop.Tiger.Benchmarks.csproj" />
+  <Project Path="Aesop.Tiger.Tests/Aesop.Tiger.Tests.csproj" />
+  <Project Path="Aesop.Tiger/Aesop.Tiger.csproj" />
+</Solution>
