@@ -57,7 +57,9 @@ public class Benchmark : IDisposable
         _data = new byte[N];
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA5394 // Do not use insecure randomness
+#pragma warning disable SCS0005 // Weak random number generator.
         Random.Shared.NextBytes(_data);
+#pragma warning restore SCS0005 // Weak random number generator.
 #pragma warning restore CA5394 // Do not use insecure randomness
 #pragma warning restore IDE0079 // Remove unnecessary suppression
     }

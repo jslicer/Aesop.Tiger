@@ -50,6 +50,11 @@ public class Tiger160 : TigerFull
     /// </summary>
     private const int HashSizeInBytes = 20;
 
+    /// <summary>
+    /// The test data.
+    /// </summary>
+    private const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+
     /// <inheritdoc cref="Tiger192" />
     /// <summary>
     /// Initializes a new instance of the <see cref="Tiger160" /> class.
@@ -70,7 +75,6 @@ public class Tiger160 : TigerFull
     /// set to <see cref="EncoderExceptionFallback" />.</exception>
     public override (bool Success, byte[] Hash) SelfTestPass()
     {
-        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
         byte[] testHash =
         [
             0x9b, 0x9c, 0x58, 0xf2,
@@ -99,7 +103,6 @@ public class Tiger160 : TigerFull
     /// set to <see cref="EncoderExceptionFallback" />.</exception>
     public override bool SelfTestTryPass()
     {
-        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
         byte[] testHash =
         [
             0x9b, 0x9c, 0x58, 0xf2,
@@ -130,7 +133,6 @@ public class Tiger160 : TigerFull
     /// set to <see cref="EncoderExceptionFallback" />.</exception>
     public override bool SelfTestFail()
     {
-        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
         byte[] testHash =
         [
             0x9b, 0x9c, 0x58, 0xf2,
@@ -159,7 +161,6 @@ public class Tiger160 : TigerFull
     /// set to <see cref="EncoderExceptionFallback" />.</exception>
     public override bool SelfTestTryFail()
     {
-        const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
         byte[] testHash =
         [
             0x9b, 0x9c, 0x58, 0xf2,
