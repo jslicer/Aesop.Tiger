@@ -11,7 +11,7 @@ using (HashAlgorithm h = new Tiger192())
         FileMode.Open,
         FileAccess.Read,
         FileShare.Read,
-        (int)fi.Length,
+        4096,
         FileOptions.SequentialScan))
     {
         await h.ComputeHashAsync(s).ConfigureAwait(false);

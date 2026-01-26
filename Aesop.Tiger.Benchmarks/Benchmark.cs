@@ -25,6 +25,11 @@ public class Benchmark : IDisposable
 #pragma warning restore IDE0079 // Remove unnecessary suppression
 {
     /// <summary>
+    /// The number of bits in a byte.
+    /// </summary>
+    private const int BitsInAByte = 8;
+
+    /// <summary>
     /// The size of the random byte array to hash.
     /// </summary>
     private const int N = 100000;
@@ -76,23 +81,38 @@ public class Benchmark : IDisposable
     /// <summary>
     /// Benchmark the Tiger 128 hashing algorithm variant.
     /// </summary>
-    /// <returns>The resulting hash value of the random byte array.</returns>
+    /// <returns><see langword="true" /> if the hash was computed successfully; otherwise, <see langword="false" />.</returns>
     [Benchmark]
-    public byte[] Tiger128() => _tiger128.ComputeHash(_data);
+    public bool Tiger128()
+    {
+        Span<byte> hash = stackalloc byte[_tiger128.HashSize / BitsInAByte];
+
+        return _tiger128.TryComputeHash(_data, hash, out int bytesWritten) && bytesWritten == hash.Length;
+    }
 
     /// <summary>
     /// Benchmark the Tiger 160 hashing algorithm variant.
     /// </summary>
-    /// <returns>The resulting hash value of the random byte array.</returns>
+    /// <returns><see langword="true" /> if the hash was computed successfully; otherwise, <see langword="false" />.</returns>
     [Benchmark]
-    public byte[] Tiger160() => _tiger160.ComputeHash(_data);
+    public bool Tiger160()
+    {
+        Span<byte> hash = stackalloc byte[_tiger160.HashSize / BitsInAByte];
+
+        return _tiger160.TryComputeHash(_data, hash, out int bytesWritten) && bytesWritten == hash.Length;
+    }
 
     /// <summary>
     /// Benchmark the Tiger 192 hashing algorithm variant.
     /// </summary>
-    /// <returns>The resulting hash value of the random byte array.</returns>
+    /// <returns><see langword="true" /> if the hash was computed successfully; otherwise, <see langword="false" />.</returns>
     [Benchmark]
-    public byte[] Tiger192() => _tiger192.ComputeHash(_data);
+    public bool Tiger192()
+    {
+        Span<byte> hash = stackalloc byte[_tiger192.HashSize / BitsInAByte];
+
+        return _tiger192.TryComputeHash(_data, hash, out int bytesWritten) && bytesWritten == hash.Length;
+    }
 
     /// <summary>
     /// Releases unmanaged and - optionally - managed resources.

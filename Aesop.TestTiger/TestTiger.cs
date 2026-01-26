@@ -33,7 +33,6 @@
 namespace Aesop;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
@@ -69,7 +68,7 @@ internal static class TestTiger
                 CurrentCulture,
                 "IntPtr size is: {0}",
                 IntPtr.Size)).ConfigureAwait(false);
-            if (await TestMyTigerAsync(h, cts.Token).ConfigureAwait(false) && (args.Length > 0))
+            if (await TestMyTigerAsync(h).ConfigureAwait(false) && (args.Length > 0))
             {
                 await HashFileAsync(args[0], h, cts.Token).ConfigureAwait(false);
             }
@@ -77,12 +76,12 @@ internal static class TestTiger
 
         using (HashAlgorithm ha = new Tiger160())
         {
-            _ = await TestMyTigerAsync(ha, cts.Token).ConfigureAwait(false);
+            _ = await TestMyTigerAsync(ha).ConfigureAwait(false);
         }
 
         using (HashAlgorithm ha = new Tiger128())
         {
-            _ = await TestMyTigerAsync(ha, cts.Token).ConfigureAwait(false);
+            _ = await TestMyTigerAsync(ha).ConfigureAwait(false);
         }
 
         _ = await In.ReadLineAsync(cts.Token).ConfigureAwait(false);
@@ -92,24 +91,23 @@ internal static class TestTiger
     /// Tests the Tiger algorithm.
     /// </summary>
     /// <param name="h">The hash algorithm.</param>
-    /// <param name="token">The optional cancellation token.</param>
     /// <returns><c>true</c> if the test succeeds, <c>false</c> otherwise.</returns>
-    private static async Task<bool> TestMyTigerAsync(IDisposable h, CancellationToken token = default)
+    private static async Task<bool> TestMyTigerAsync(IDisposable h)
     {
         if (h is not TigerFull h1)
         {
             return true;
         }
 
-        List<byte> hash = [.. h1.SelfTestPass().Hash];
+        byte[] hash = [.. h1.SelfTestPass().Hash];
 
-        await OutputHashAsync(hash, token).ConfigureAwait(false);
+        await OutputHashAsync(hash).ConfigureAwait(false);
         await Out.WriteLineAsync(string.Format(
             CurrentCulture,
             "Tiger/{0} {1}",
             h1.HashSize,
-            hash.Count > 0 ? "good" : "bad")).ConfigureAwait(false);
-        return hash.Count > 0;
+            hash.Length > 0 ? "good" : "bad")).ConfigureAwait(false);
+        return hash.Length > 0;
     }
 
     /// <summary>
@@ -120,6 +118,7 @@ internal static class TestTiger
     /// <param name="token">The optional cancellation token.</param>
     private static async Task HashFileAsync(string fileName, HashAlgorithm h, CancellationToken token = default)
     {
+        const int BufferSize = 4096;
         Stopwatch stopwatch;
         FileInfo fi = new(fileName);
 
@@ -129,7 +128,7 @@ internal static class TestTiger
             FileMode.Open,
             FileAccess.Read,
             FileShare.Read,
-            (int)fi.Length,
+            BufferSize,
             FileOptions.SequentialScan))
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
         {
@@ -145,7 +144,7 @@ internal static class TestTiger
         }
 
         await Out.WriteAsync(string.Format(CurrentCulture, "\"{0}\": ", fileName)).ConfigureAwait(false);
-        await OutputHashAsync(h.Hash, token).ConfigureAwait(false);
+        await OutputHashAsync(h.Hash).ConfigureAwait(false);
         await Out.WriteLineAsync(string.Format(
             CurrentCulture,
             "Time: {0}",
@@ -160,24 +159,6 @@ internal static class TestTiger
     /// Outputs the hash.
     /// </summary>
     /// <param name="hash">The hash.</param>
-    /// <param name="token">The optional cancellation token.</param>
-    private static async Task OutputHashAsync(IEnumerable<byte> hash, CancellationToken token = default)
-    {
-        foreach (byte by in hash)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            await Out.WriteAsync(by.ToString("X", InvariantCulture)).ConfigureAwait(false);
-        }
-
-        if (token.IsCancellationRequested)
-        {
-            return;
-        }
-
-        await Out.WriteLineAsync().ConfigureAwait(false);
-    }
+    private static async Task OutputHashAsync(byte[] hash) =>
+        await Out.WriteLineAsync(Convert.ToHexString(hash)).ConfigureAwait(false);
 }

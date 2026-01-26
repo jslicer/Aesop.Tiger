@@ -161,9 +161,9 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// <exception cref="ArgumentException"> length is greater than the number of elements from sourceIndex to the
     /// end of sourceArray.-or- length is greater than the number of elements from destinationIndex to the end of
     /// destinationArray.</exception>
-    /// <exception cref="ArrayTypeMismatchException"> sourceArray and destinationArray" are of incompatible
+    /// <exception cref="ArrayTypeMismatchException"> sourceArray and destinationArray are of incompatible
     /// types.</exception>
-    /// <exception cref="InvalidCastException">At least one element in sourceArray" cannot be cast to the type of
+    /// <exception cref="InvalidCastException">At least one element in sourceArray cannot be cast to the type of
     /// destinationArray.</exception>
     // ReSharper disable once MethodTooLong
     protected override void HashCore(byte[] array, int ibStart, int cbSize)
@@ -267,16 +267,20 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
-        ulong[] ulongBuffer)
+        ulong[] ulongBuffer,
+        in ulong table1,
+        in ulong table2,
+        in ulong table3,
+        in ulong table4)
     {
-        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 5);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 5);
-        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 5);
-        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 5);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 5);
-        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 5);
-        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 5);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 5);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 5, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 5, in table1, in table2, in table3, in table4);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 5, in table1, in table2, in table3, in table4);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 5, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 5, in table1, in table2, in table3, in table4);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 5, in table1, in table2, in table3, in table4);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 5, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 5, in table1, in table2, in table3, in table4);
     }
 
     // ReSharper disable once TooManyArguments
@@ -284,16 +288,20 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
-        ulong[] ulongBuffer)
+        ulong[] ulongBuffer,
+        in ulong table1,
+        in ulong table2,
+        in ulong table3,
+        in ulong table4)
     {
-        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 7);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 7);
-        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 7);
-        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 7);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 7);
-        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 7);
-        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 7);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 7);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 7, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 7, in table1, in table2, in table3, in table4);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 7, in table1, in table2, in table3, in table4);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 7, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 7, in table1, in table2, in table3, in table4);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 7, in table1, in table2, in table3, in table4);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 7, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 7, in table1, in table2, in table3, in table4);
     }
 
     // ReSharper disable once TooManyArguments
@@ -301,16 +309,20 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         ref ulong ap,
         ref ulong bp,
         ref ulong cp,
-        ulong[] ulongBuffer)
+        ulong[] ulongBuffer,
+        in ulong table1,
+        in ulong table2,
+        in ulong table3,
+        in ulong table4)
     {
-        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 9);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 9);
-        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 9);
-        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 9);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 9);
-        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 9);
-        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 9);
-        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 9);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[0], 9, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[1], 9, in table1, in table2, in table3, in table4);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[2], 9, in table1, in table2, in table3, in table4);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[3], 9, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[4], 9, in table1, in table2, in table3, in table4);
+        Round(ref cp, ref ap, ref bp, ulongBuffer[5], 9, in table1, in table2, in table3, in table4);
+        Round(ref ap, ref bp, ref cp, ulongBuffer[6], 9, in table1, in table2, in table3, in table4);
+        Round(ref bp, ref cp, ref ap, ulongBuffer[7], 9, in table1, in table2, in table3, in table4);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
@@ -342,19 +354,19 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     //// ReSharper disable once TooManyArguments
     // ReSharper disable once MethodTooLong
+    // ReSharper disable once TooManyDeclarations
     private static void Round(
         ref ulong ar,
         ref ulong br,
         ref ulong cr,
         ulong ulongBuffer,
-        ulong multiplier)
+        ulong multiplier,
+        in ulong table1,
+        in ulong table2,
+        in ulong table3,
+        in ulong table4)
     {
         cr ^= ulongBuffer;
-
-        ref readonly ulong t1Ref = ref MemoryMarshal.GetReference(TigerSBox.Table1);
-        ref readonly ulong t2Ref = ref MemoryMarshal.GetReference(TigerSBox.Table2);
-        ref readonly ulong t3Ref = ref MemoryMarshal.GetReference(TigerSBox.Table3);
-        ref readonly ulong t4Ref = ref MemoryMarshal.GetReference(TigerSBox.Table4);
 
         int i0 = (int)(cr & 0xff);
         //// ReSharper disable ComplexConditionExpression
@@ -364,10 +376,10 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         //// ReSharper restore ComplexConditionExpression
 
         // ReSharper disable once ComplexConditionExpression
-        ar -= Unsafe.Add(ref Unsafe.AsRef(in t1Ref), i0)
-            ^ Unsafe.Add(ref Unsafe.AsRef(in t2Ref), i1)
-            ^ Unsafe.Add(ref Unsafe.AsRef(in t3Ref), i2)
-            ^ Unsafe.Add(ref Unsafe.AsRef(in t4Ref), i3);
+        ar -= Unsafe.Add(ref Unsafe.AsRef(in table1), i0)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in table2), i1)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in table3), i2)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in table4), i3);
 
         //// ReSharper disable ComplexConditionExpression
         int j0 = (int)((cr >> 8) & 0xff);
@@ -377,10 +389,10 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         //// ReSharper restore ComplexConditionExpression
 
         // ReSharper disable once ComplexConditionExpression
-        br += Unsafe.Add(ref Unsafe.AsRef(in t4Ref), j0)
-            ^ Unsafe.Add(ref Unsafe.AsRef(in t3Ref), j1)
-            ^ Unsafe.Add(ref Unsafe.AsRef(in t2Ref), j2)
-            ^ Unsafe.Add(ref Unsafe.AsRef(in t1Ref), j3);
+        br += Unsafe.Add(ref Unsafe.AsRef(in table4), j0)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in table3), j1)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in table2), j2)
+            ^ Unsafe.Add(ref Unsafe.AsRef(in table1), j3);
         br *= multiplier;
     }
 
@@ -402,18 +414,12 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         ReadOnlySpan<byte> byteSpan,
         ulong[] ulongBuffer1)
     {
-        ReadOnlySpan<ulong> ulongSpan = MemoryMarshal.Cast<byte, ulong>(byteSpan);
+        Span<byte> ulongBytes = MemoryMarshal.AsBytes(ulongBuffer1.AsSpan());
+        byteSpan.CopyTo(ulongBytes);
 
-        if (IsLittleEndianSystem)
-        {
-            // On little-endian systems, we can directly use the span without copying
-            // if it's properly aligned, but for safety we copy to our buffer
-            ulongSpan.CopyTo(ulongBuffer1);
-        }
-        else
+        if (!IsLittleEndianSystem)
         {
             // On big-endian systems, we need to reverse endianness
-            ulongSpan.CopyTo(ulongBuffer1);
             for (int i = 0; i < BlockSizeInUlongs; i++)
             {
                 ulongBuffer1[i] = BinaryPrimitives.ReverseEndianness(ulongBuffer1[i]);
@@ -437,23 +443,31 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         for (int i = 0; i < blockCount; i++)
         {
             ReadOnlySpan<byte> block = input.Slice(i * BlockSizeInBytes, BlockSizeInBytes);
+
             ProcessBlockFromBytes(ref _a, ref _b, ref _c, block, _ulongBuffer);
         }
     }
 
     // ReSharper disable once TooManyArguments
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    //// ReSharper disable once MethodTooLong
     private void Compress(ref ulong ac, ref ulong bc, ref ulong cc1, ulong[] ulongBuffer1)
     {
         SaveAbc(ac, bc, cc1);
-        Pass5(ref ac, ref bc, ref cc1, ulongBuffer1);
+
+        ref readonly ulong table1 = ref MemoryMarshal.GetReference(TigerSBox.Table1);
+        ref readonly ulong table2 = ref MemoryMarshal.GetReference(TigerSBox.Table2);
+        ref readonly ulong table3 = ref MemoryMarshal.GetReference(TigerSBox.Table3);
+        ref readonly ulong table4 = ref MemoryMarshal.GetReference(TigerSBox.Table4);
+
+        Pass5(ref ac, ref bc, ref cc1, ulongBuffer1, in table1, in table2, in table3, in table4);
         KeySchedule(ulongBuffer1);
-        Pass7(ref cc1, ref ac, ref bc, ulongBuffer1);
+        Pass7(ref cc1, ref ac, ref bc, ulongBuffer1, in table1, in table2, in table3, in table4);
         KeySchedule(ulongBuffer1);
-        Pass9(ref bc, ref cc1, ref ac, ulongBuffer1);
+        Pass9(ref bc, ref cc1, ref ac, ulongBuffer1, in table1, in table2, in table3, in table4);
         for (int passNumber = DefaultPasses; passNumber < Passes; passNumber++)
         {
-            Pass9(ref ac, ref bc, ref cc1, ulongBuffer1);
+            Pass9(ref ac, ref bc, ref cc1, ulongBuffer1, in table1, in table2, in table3, in table4);
             (ac, bc, cc1) = (bc, cc1, ac);
         }
 

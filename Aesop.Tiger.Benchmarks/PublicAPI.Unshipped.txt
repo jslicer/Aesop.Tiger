@@ -1,9 +1,9 @@
 ﻿Aesop.Tiger.Benchmarks.Benchmark
 Aesop.Tiger.Benchmarks.Benchmark.Benchmark() -> void
 Aesop.Tiger.Benchmarks.Benchmark.Dispose() -> void
-Aesop.Tiger.Benchmarks.Benchmark.Tiger128() -> byte[]!
-Aesop.Tiger.Benchmarks.Benchmark.Tiger160() -> byte[]!
-Aesop.Tiger.Benchmarks.Benchmark.Tiger192() -> byte[]!
+Aesop.Tiger.Benchmarks.Benchmark.Tiger128() -> bool
+Aesop.Tiger.Benchmarks.Benchmark.Tiger160() -> bool
+Aesop.Tiger.Benchmarks.Benchmark.Tiger192() -> bool
 Aesop.Tiger.Benchmarks.BenchmarkConfig
 Aesop.Tiger.Benchmarks.BenchmarkConfig.BenchmarkConfig() -> void
 virtual Aesop.Tiger.Benchmarks.Benchmark.Dispose(bool disposing) -> void
