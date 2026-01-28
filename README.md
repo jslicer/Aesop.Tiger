@@ -26,17 +26,17 @@ using (HashAlgorithm h = new Tiger192())
 <!-- BENCHMARK_RESULTS_START -->
 ```
 
-BenchmarkDotNet v0.15.6, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
-Intel Xeon Platinum 8370C CPU 2.80GHz (Max: 2.79GHz), 1 CPU, 4 logical and 2 physical cores
-.NET SDK 10.0.100
-  [Host]     : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
-  DefaultJob : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.3 LTS (Noble Numbat)
+AMD EPYC 7763 2.45GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.102
+  [Host]     : .NET 10.0.2 (10.0.2, 10.0.225.61305), X64 RyuJIT x86-64-v3
+  DefaultJob : .NET 10.0.2 (10.0.2, 10.0.225.61305), X64 RyuJIT x86-64-v3
 
 
 ```
 | Method   | Mean     | Error   | StdDev  |
 |--------- |---------:|--------:|--------:|
-| Tiger128 | 277.2 μs | 0.37 μs | 0.29 μs |
-| Tiger160 | 277.2 μs | 0.20 μs | 0.17 μs |
-| Tiger192 | 277.2 μs | 0.32 μs | 0.29 μs |
+| Tiger128 | 330.3 μs | 0.51 μs | 0.43 μs |
+| Tiger160 | 330.8 μs | 0.31 μs | 0.26 μs |
+| Tiger192 | 329.2 μs | 0.57 μs | 0.48 μs |
 <!-- BENCHMARK_RESULTS_END -->
