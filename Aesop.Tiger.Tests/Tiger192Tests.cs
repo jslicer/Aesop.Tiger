@@ -32,11 +32,13 @@
 namespace Aesop.Tiger.Tests;
 
 using System.Security.Cryptography;
-
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using static System.Text.Encoding;
+#pragma warning disable IDE0001
 using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+#pragma warning restore IDE0001
 
 /// <summary>
 /// Tests the functionality of the <see cref="Tiger192" /> class.
@@ -55,6 +57,7 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Runs the self-test of the <see cref="Tiger192" /> class and asserts its success.
     /// </summary>
+    /// <exception cref="AssertFailedException">Thrown if condition is false.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestSelfTestPass()
@@ -66,6 +69,7 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Runs the self-test of the <see cref="Tiger192" /> class in span mode and asserts its success.
     /// </summary>
+    /// <exception cref="AssertFailedException">Thrown if condition is false.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestSelfTestTryPass()
@@ -77,6 +81,7 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Runs the self-test of the <see cref="Tiger192" /> class and asserts its failure.
     /// </summary>
+    /// <exception cref="AssertFailedException">Thrown if condition is true.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestSelfTestFail()
@@ -88,6 +93,7 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Runs the self-test of the <see cref="Tiger192" /> class in span mode and asserts its failure.
     /// </summary>
+    /// <exception cref="AssertFailedException">Thrown if condition is true.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestSelfTestTryFail()
@@ -99,6 +105,7 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Tests that <see cref="Tiger192" /> supports transforming multiple blocks.
     /// </summary>
+    /// <exception cref="AssertFailedException">Thrown if condition is false.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestCanTransformMultipleBlocks()
@@ -110,6 +117,7 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Tests <see cref="Tiger192" /> Passes property returns the proper default.
     /// </summary>
+    /// <exception cref="AssertFailedException">Thrown if expected is not equal to actual.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestPasses()
@@ -121,6 +129,7 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Tests <see cref="Tiger192" /> HashSize property returns the proper hash algorithm bit size.
     /// </summary>
+    /// <exception cref="AssertFailedException">Thrown if expected is not equal to actual.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestHashSize()
@@ -132,10 +141,18 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Tests <see cref="Tiger192" /> for additional passes with a test string.
     /// </summary>
+    /// <exception cref="ArgumentNullException">s is <see langword="null" />.</exception>
+    /// <exception cref="EncoderFallbackException">A fallback occurred (for more information, see Character Encoding in
+    /// .NET)
+    ///  -and-
+    ///  <see cref="EncoderFallback" /> is set to <see cref="EncoderExceptionFallback" />.</exception>
+    /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
+    /// <exception cref="AssertFailedException">Thrown if condition is false.</exception>
     [TestMethod]
     //// ReSharper disable once UnusedMember.Global
     public void TestExtraPasses()
     {
+        // ReSharper disable once InconsistentNaming
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
         byte[] testHash =
         [
@@ -156,12 +173,20 @@ public sealed class Tiger192Tests
 
     /// <summary>
     /// Tests <see cref="Tiger192" /> span mode for additional passes with a test string.
+    /// <exception cref="ArgumentNullException">s is <see langword="null" />.</exception>
+    /// <exception cref="EncoderFallbackException">A fallback occurred (for more information, see Character Encoding in
+    /// .NET)
+    ///  -and-
+    ///  <see cref="EncoderFallback" /> is set to <see cref="EncoderExceptionFallback" />.</exception>
+    /// <exception cref="AssertFailedException">Thrown if condition is false.</exception>
+    /// <exception cref="AssertFailedException">Thrown if expected is not equal to actual.</exception>
     /// </summary>
     [TestMethod]
     //// ReSharper disable once TooManyDeclarations
     //// ReSharper disable once UnusedMember.Global
     public void TestExtraPassesTry()
     {
+        // ReSharper disable once InconsistentNaming
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
         byte[] testHash =
         [
@@ -190,11 +215,19 @@ public sealed class Tiger192Tests
     /// <summary>
     /// Tests <see cref="Tiger192" /> span mode for additional passes with a test string.
     /// </summary>
+    /// <exception cref="ArgumentNullException">s is <see langword="null" />.</exception>
+    /// <exception cref="EncoderFallbackException">A fallback occurred (for more information, see Character Encoding in
+    /// .NET)
+    ///  -and-
+    ///  <see cref="EncoderFallback" /> is set to <see cref="EncoderExceptionFallback" />.</exception>
+    /// <exception cref="AssertFailedException">Thrown if condition is true.</exception>
+    /// <exception cref="AssertFailedException">Thrown if expected is not equal to actual.</exception>
     [TestMethod]
     //// ReSharper disable once TooManyDeclarations
     //// ReSharper disable once UnusedMember.Global
     public void TestExtraPassesTryFail()
     {
+        // ReSharper disable once InconsistentNaming
         const string TestData = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq12345678";
         byte[] testHash =
         [

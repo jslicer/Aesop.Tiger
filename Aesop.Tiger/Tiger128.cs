@@ -33,7 +33,6 @@
 namespace Aesop;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-using System;
 using System.Text;
 
 using static System.Text.Encoding;
@@ -43,7 +42,9 @@ using static System.Text.Encoding;
 /// Tiger hash, 128-bit implementation.
 /// </summary>
 /// <seealso cref="Tiger160" />
+#pragma warning disable S2257 // Custom cryptographic algorithms should not be used
 public class Tiger128 : TigerFull
+#pragma warning restore S2257 // Custom cryptographic algorithms should not be used
 {
     /// <summary>
     /// The hash size in bytes.
@@ -60,7 +61,7 @@ public class Tiger128 : TigerFull
     /// Initializes a new instance of the <see cref="Tiger128" /> class.
     /// </summary>
     /// <param name="passes">The number of calculation passes.</param>
-    public Tiger128(in int passes = DefaultPasses)
+    public Tiger128(int passes = DefaultPasses)
         : base(passes) => HashSizeValue = HashSizeInBytes << 3;
 
     /// <inheritdoc />
@@ -96,7 +97,6 @@ public class Tiger128 : TigerFull
     /// </summary>
     /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
     /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
-    /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
     /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
     /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
     /// set to <see cref="EncoderExceptionFallback" />.</exception>
@@ -152,7 +152,6 @@ public class Tiger128 : TigerFull
     /// </summary>
     /// <returns><see langword="true" /> if the self-test succeeds,<see langword="false" /> otherwise.</returns>
     /// <exception cref="ArgumentNullException"> buffer is <see langword="null" />.</exception>
-    /// <exception cref="ObjectDisposedException">The object has already been disposed.</exception>
     /// <exception cref="EncoderFallbackException">A fall-back occurred (see Character Encoding in
     /// the .NET Framework for complete explanation)-and- <see cref="EncoderFallback" /> is
     /// set to <see cref="EncoderExceptionFallback" />.</exception>

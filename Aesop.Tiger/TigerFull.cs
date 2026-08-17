@@ -34,7 +34,6 @@
 namespace Aesop;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -50,7 +49,9 @@ using System.Security.Cryptography;
 /// Initializes a new instance of the <see cref="TigerFull" /> class.
 /// </remarks>
 /// <param name="passes">The number of calculation passes.</param>
+#pragma warning disable S2257 // Custom cryptographic algorithms should not be used
 public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgorithm
+#pragma warning restore S2257 // Custom cryptographic algorithms should not be used
 {
     /// <summary>
     /// The default number of calculation passes.
@@ -75,7 +76,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// <summary>
     /// Cached value indicating whether the system is little-endian.
     /// </summary>
-    private static readonly bool IsLittleEndianSystem = BitConverter.IsLittleEndian;
+    private static readonly bool _IsLittleEndianSystem = BitConverter.IsLittleEndian;
 
     private readonly byte[] _byteBuffer = new byte[BlockSizeInBytes];
 
@@ -152,9 +153,6 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// <param name="array">The input to compute the hash code for.</param>
     /// <param name="ibStart">The offset into the byte array from which to begin using data.</param>
     /// <param name="cbSize">The number of bytes in the byte array to use as data.</param>
-    /// <exception cref="RankException"> sourceArray and destinationArray have different ranks.</exception>
-    /// <exception cref="ArgumentNullException"> sourceArray is <see langword="null" />.-or-
-    /// destinationArray is <see langword="null" />.</exception>
     /// <exception cref="ArgumentOutOfRangeException"> sourceIndex is less than the lower bound of the first
     /// dimension of sourceArray.-or- destinationIndex is less than the lower bound of the first dimension of
     /// destinationArray.-or- length is less than zero.</exception>
@@ -163,8 +161,6 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// destinationArray.</exception>
     /// <exception cref="ArrayTypeMismatchException"> sourceArray and destinationArray are of incompatible
     /// types.</exception>
-    /// <exception cref="InvalidCastException">At least one element in sourceArray cannot be cast to the type of
-    /// destinationArray.</exception>
     // ReSharper disable once MethodTooLong
     protected override void HashCore(byte[] array, int ibStart, int cbSize)
     {
@@ -204,6 +200,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         }
 
         // Copy any remaining bytes to the buffer
+        // ReSharper disable once InvertIf
         if (cbSize > 0)
         {
             array.AsSpan(ibStart, cbSize).CopyTo(_byteBuffer);
@@ -215,17 +212,18 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// <summary>When overridden in a derived class, finalizes the hash computation after the last data is
     /// processed by the cryptographic stream object.</summary>
     /// <returns>The computed hash code.</returns>
-    /// <exception cref="ArgumentNullException"> sourceArray is <see langword="null" />.-or-
-    /// destinationArray is <see langword="null" />.</exception>
-    /// <exception cref="IndexOutOfRangeException"> index is less than the lower bound of array.-or-
-    /// length is less than zero.-or-The sum of index and length is greater than the size of array.</exception>
+    /// <exception cref="ArrayTypeMismatchException">array is covariant, and the array's type is not exactly
+    /// <see langword="T[]" />".</exception>
+    /// <exception cref="ArgumentOutOfRangeException">start, length, or start + length is not in the range of
+    /// array.</exception>
+    /// <exception cref="ArgumentException">destination is shorter than the source <see cref="Span{T}" />.</exception>
     // ReSharper disable once MethodTooLong
     protected override byte[] HashFinal()
     {
         Span<byte> bytes = stackalloc byte[HashSize >> 3];
 
-        TryHashFinal(bytes, out int _);
-        return bytes.ToArray();
+        _ = TryHashFinal(bytes, out int _);
+        return [.. bytes];
     }
 
     /// <summary>
@@ -236,6 +234,12 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// <paramref name="destination" />. This parameter is treated as uninitialized.</param>
     /// <returns><see langword="true" /> if <paramref name="destination" /> is long enough to receive the hash
     /// value; otherwise, <see langword="false" />.</returns>
+    /// <exception cref="ArrayTypeMismatchException">array is covariant, and the array's type is not exactly
+    /// <see langword="T[]" />".</exception>
+    /// <exception cref="ArgumentOutOfRangeException">start, length, or start + length is not in the range of
+    /// array.</exception>
+    /// <exception cref="ArgumentException"><paramref name="destination" /> is shorter than the source
+    /// <see cref="Span{T}" />.</exception>
     // ReSharper disable once MethodTooLong
     protected override bool TryHashFinal(Span<byte> destination, out int bytesWritten)
     {
@@ -263,6 +267,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     }
 
     // ReSharper disable once TooManyArguments
+#pragma warning disable S107
     private static void Pass5(
         ref ulong ap,
         ref ulong bp,
@@ -272,6 +277,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         in ulong table2,
         in ulong table3,
         in ulong table4)
+#pragma warning restore S107
     {
         Round(ref ap, ref bp, ref cp, ulongBuffer[0], 5, in table1, in table2, in table3, in table4);
         Round(ref bp, ref cp, ref ap, ulongBuffer[1], 5, in table1, in table2, in table3, in table4);
@@ -284,6 +290,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     }
 
     // ReSharper disable once TooManyArguments
+#pragma warning disable S107
     private static void Pass7(
         ref ulong ap,
         ref ulong bp,
@@ -293,6 +300,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         in ulong table2,
         in ulong table3,
         in ulong table4)
+#pragma warning restore S107
     {
         Round(ref ap, ref bp, ref cp, ulongBuffer[0], 7, in table1, in table2, in table3, in table4);
         Round(ref bp, ref cp, ref ap, ulongBuffer[1], 7, in table1, in table2, in table3, in table4);
@@ -305,6 +313,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     }
 
     // ReSharper disable once TooManyArguments
+#pragma warning disable S107
     private static void Pass9(
         ref ulong ap,
         ref ulong bp,
@@ -314,6 +323,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         in ulong table2,
         in ulong table3,
         in ulong table4)
+#pragma warning restore S107
     {
         Round(ref ap, ref bp, ref cp, ulongBuffer[0], 9, in table1, in table2, in table3, in table4);
         Round(ref bp, ref cp, ref ap, ulongBuffer[1], 9, in table1, in table2, in table3, in table4);
@@ -355,6 +365,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     //// ReSharper disable once TooManyArguments
     // ReSharper disable once MethodTooLong
     // ReSharper disable once TooManyDeclarations
+#pragma warning disable S107
     private static void Round(
         ref ulong ar,
         ref ulong br,
@@ -365,6 +376,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         in ulong table2,
         in ulong table3,
         in ulong table4)
+#pragma warning restore S107
     {
         cr ^= ulongBuffer;
 
@@ -417,7 +429,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         Span<byte> ulongBytes = MemoryMarshal.AsBytes(ulongBuffer1.AsSpan());
         byteSpan.CopyTo(ulongBytes);
 
-        if (!IsLittleEndianSystem)
+        if (!_IsLittleEndianSystem)
         {
             // On big-endian systems, we need to reverse endianness
             for (int i = 0; i < BlockSizeInUlongs; i++)

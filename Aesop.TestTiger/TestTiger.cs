@@ -32,14 +32,12 @@
 
 namespace Aesop;
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
 
+#pragma warning disable IDE0001
 using static System.Console;
+#pragma warning restore IDE0001
 using static System.Globalization.CultureInfo;
 
 /// <summary>
@@ -55,10 +53,10 @@ internal static class TestTiger
     private static async Task Main(string[] args)
     {
         HashAlgorithm h1 = new Tiger192();
-        ////var h2 = new MD5CryptoServiceProvider();
-        ////var h3 = new SHA1CryptoServiceProvider();
-        ////var h4 = new SHA1Managed();
-        ////var h5 = new SHA256Managed();
+        ////HashAlgorithm h2 = new MD5CryptoServiceProvider();
+        ////HashAlgorithm h3 = new SHA1CryptoServiceProvider();
+        ////HashAlgorithm h4 = new SHA1Managed();
+        ////HashAlgorithm h5 = new SHA256Managed();
 
         // Change h1 to h2, etc. for testing.
         using CancellationTokenSource cts = new();
@@ -118,6 +116,7 @@ internal static class TestTiger
     /// <param name="token">The optional cancellation token.</param>
     private static async Task HashFileAsync(string fileName, HashAlgorithm h, CancellationToken token = default)
     {
+        // ReSharper disable once InconsistentNaming
         const int BufferSize = 4096;
         Stopwatch stopwatch;
         FileInfo fi = new(fileName);
@@ -160,5 +159,6 @@ internal static class TestTiger
     /// </summary>
     /// <param name="hash">The hash.</param>
     private static async Task OutputHashAsync(byte[] hash) =>
+        //// ReSharper disable once AsyncApostle.AsyncAwaitMayBeElidedHighlighting
         await Out.WriteLineAsync(Convert.ToHexString(hash)).ConfigureAwait(false);
 }

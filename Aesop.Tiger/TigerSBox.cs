@@ -33,8 +33,6 @@
 namespace Aesop;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-using System;
-
 /// <summary>
 /// A class with the S-Box constants.
 /// </summary>

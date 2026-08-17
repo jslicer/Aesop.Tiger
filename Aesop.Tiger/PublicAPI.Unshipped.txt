@@ -3,11 +3,11 @@ abstract Aesop.TigerFull.SelfTestPass() -> (bool Success, byte[]! Hash)
 abstract Aesop.TigerFull.SelfTestTryFail() -> bool
 abstract Aesop.TigerFull.SelfTestTryPass() -> bool
 Aesop.Tiger128
-Aesop.Tiger128.Tiger128(in int passes = 3) -> void
+Aesop.Tiger128.Tiger128(int passes = 3) -> void
 Aesop.Tiger160
-Aesop.Tiger160.Tiger160(in int passes = 3) -> void
+Aesop.Tiger160.Tiger160(int passes = 3) -> void
 Aesop.Tiger192
-Aesop.Tiger192.Tiger192(in int passes = 3) -> void
+Aesop.Tiger192.Tiger192(int passes = 3) -> void
 Aesop.TigerFull
 Aesop.TigerFull.Passes.get -> int
 Aesop.TigerFull.TigerFull(int passes = 3) -> void
