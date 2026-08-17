@@ -158,7 +158,8 @@ internal static class TestTiger
     /// Outputs the hash.
     /// </summary>
     /// <param name="hash">The hash.</param>
+    //// ReSharper disable AsyncApostle.AsyncAwaitMayBeElidedHighlighting
     private static async Task OutputHashAsync(byte[] hash) =>
-        //// ReSharper disable once AsyncApostle.AsyncAwaitMayBeElidedHighlighting
         await Out.WriteLineAsync(Convert.ToHexString(hash)).ConfigureAwait(false);
+    //// ReSharper restore AsyncApostle.AsyncAwaitMayBeElidedHighlighting
 }
