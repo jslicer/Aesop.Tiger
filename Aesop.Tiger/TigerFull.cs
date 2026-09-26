@@ -116,9 +116,9 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     /// class.</summary>
     public override void Initialize()
     {
-        _a = 0x0123456789abcdef;
-        _b = 0xfedcba9876543210;
-        _c = 0xf096a5b4c3b2e187;
+        _a = 0x0123456789abcdefUL;
+        _b = 0xfedcba9876543210UL;
+        _c = 0xf096a5b4c3b2e187UL;
         _byteBufferPos = 0;
         _len = 0UL;
     }
@@ -166,7 +166,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     {
         _len += (ulong)cbSize;
 
-        // First, fill any partial block in the buffer
+        // First, fill any partial block in the buffer.
         if (_byteBufferPos > 0)
         {
             int toCopy = Math.Min(BlockSizeInBytes - _byteBufferPos, cbSize);
@@ -175,7 +175,6 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
             ibStart += toCopy;
             cbSize -= toCopy;
             _byteBufferPos += toCopy;
-
             if (_byteBufferPos == BlockSizeInBytes)
             {
                 ProcessBlock(ref _a, ref _b, ref _c, _byteBuffer, _ulongBuffer);
@@ -187,7 +186,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
             }
         }
 
-        // Process complete blocks directly from the input array
+        // Process complete blocks directly from the input array.
         int completeBlocks = cbSize / BlockSizeInBytes;
 
         if (completeBlocks > 0)
@@ -199,7 +198,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
             cbSize -= completeBlocks * BlockSizeInBytes;
         }
 
-        // Copy any remaining bytes to the buffer
+        // Copy any remaining bytes to the buffer.
         // ReSharper disable once InvertIf
         if (cbSize > 0)
         {
@@ -266,8 +265,8 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         return true;
     }
 
-    // ReSharper disable once TooManyArguments
 #pragma warning disable S107
+    // ReSharper disable once TooManyArguments
     private static void Pass5(
         ref ulong ap,
         ref ulong bp,
@@ -289,8 +288,8 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         Round(ref bp, ref cp, ref ap, ulongBuffer[7], 5, in table1, in table2, in table3, in table4);
     }
 
-    // ReSharper disable once TooManyArguments
 #pragma warning disable S107
+    // ReSharper disable once TooManyArguments
     private static void Pass7(
         ref ulong ap,
         ref ulong bp,
@@ -312,8 +311,8 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         Round(ref bp, ref cp, ref ap, ulongBuffer[7], 7, in table1, in table2, in table3, in table4);
     }
 
-    // ReSharper disable once TooManyArguments
 #pragma warning disable S107
+    // ReSharper disable once TooManyArguments
     private static void Pass9(
         ref ulong ap,
         ref ulong bp,
@@ -339,7 +338,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
     //// ReSharper disable once MethodTooLong
     private static void KeySchedule(ulong[] ulongBuffer)
     {
-        ulongBuffer[0] -= ulongBuffer[7] ^ 0xa5a5a5a5a5a5a5a5;
+        ulongBuffer[0] -= ulongBuffer[7] ^ 0xa5a5a5a5a5a5a5a5UL;
         ulongBuffer[1] ^= ulongBuffer[0];
         ulongBuffer[2] += ulongBuffer[1];
         //// ReSharper disable once ComplexConditionExpression
@@ -347,7 +346,7 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         ulongBuffer[4] ^= ulongBuffer[3];
         ulongBuffer[5] += ulongBuffer[4];
         //// ReSharper disable once ComplexConditionExpression
-        ulongBuffer[6] -= ulongBuffer[5] ^ ((~ulongBuffer[4] >> 23) & 0x000001ffffffffff);
+        ulongBuffer[6] -= ulongBuffer[5] ^ ((~ulongBuffer[4] >> 23) & 0x000001ffffffffffUL);
         ulongBuffer[7] ^= ulongBuffer[6];
         ulongBuffer[0] += ulongBuffer[7];
         //// ReSharper disable once ComplexConditionExpression
@@ -355,17 +354,17 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         ulongBuffer[2] ^= ulongBuffer[1];
         ulongBuffer[3] += ulongBuffer[2];
         //// ReSharper disable once ComplexConditionExpression
-        ulongBuffer[4] -= ulongBuffer[3] ^ ((~ulongBuffer[2] >> 23) & 0x000001ffffffffff);
+        ulongBuffer[4] -= ulongBuffer[3] ^ ((~ulongBuffer[2] >> 23) & 0x000001ffffffffffUL);
         ulongBuffer[5] ^= ulongBuffer[4];
         ulongBuffer[6] += ulongBuffer[5];
-        ulongBuffer[7] -= ulongBuffer[6] ^ 0x0123456789abcdef;
+        ulongBuffer[7] -= ulongBuffer[6] ^ 0x0123456789abcdefUL;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+#pragma warning disable S107
     //// ReSharper disable once TooManyArguments
     // ReSharper disable once MethodTooLong
     // ReSharper disable once TooManyDeclarations
-#pragma warning disable S107
     private static void Round(
         ref ulong ar,
         ref ulong br,
@@ -427,11 +426,11 @@ public abstract class TigerFull(int passes = TigerFull.DefaultPasses) : HashAlgo
         ulong[] ulongBuffer1)
     {
         Span<byte> ulongBytes = MemoryMarshal.AsBytes(ulongBuffer1.AsSpan());
-        byteSpan.CopyTo(ulongBytes);
 
+        byteSpan.CopyTo(ulongBytes);
         if (!_IsLittleEndianSystem)
         {
-            // On big-endian systems, we need to reverse endianness
+            // On big-endian systems, we need to reverse endianness.
             for (int i = 0; i < BlockSizeInUlongs; i++)
             {
                 ulongBuffer1[i] = BinaryPrimitives.ReverseEndianness(ulongBuffer1[i]);
